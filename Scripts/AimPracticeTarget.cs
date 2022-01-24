@@ -1,6 +1,6 @@
 using TMPro;
 using UnityEngine;
-
+//This is a comment for test
 public class AimPracticeTarget : MonoBehaviour
 {
 	public bool resetEveryShoot;

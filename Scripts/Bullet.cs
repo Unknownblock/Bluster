@@ -4,7 +4,6 @@ public class Bullet : MonoBehaviour
 {
 	[Header("Assignable Variables")]
 	public GameObject impactEffect;
-
 	public GameObject bulletHole;
 
 	[Header("Amount Variables")]
@@ -13,9 +12,9 @@ public class Bullet : MonoBehaviour
 
 	private void OnCollisionEnter(Collision other)
 	{
-		Target target = other.gameObject.GetComponent<Target>();
-		ExplodingTarget explodingTarget = other.gameObject.GetComponent<ExplodingTarget>();
-		Rigidbody rigidbody = other.gameObject.GetComponent<Rigidbody>();
+		Target target = other.gameObject.GetComponent<Target>(); //See If We've Hit a Normal Target
+		ExplodingTarget explodingTarget = other.gameObject.GetComponent<ExplodingTarget>(); //See If We've Hit a Exploding Target
+		Rigidbody otherRb = other.gameObject.GetComponent<Rigidbody>(); //See If We've Hit a Rigidbody
 		
 		if (target != null)
 		{
@@ -29,10 +28,10 @@ public class Bullet : MonoBehaviour
 			PrefabManager.Instance.DisplayDamagePopUp(damage, other.transform);
 		}
 		
-		if (rigidbody != null)
+		if (otherRb != null)
 		{
-			rigidbody.velocity = Vector3.zero;
-			rigidbody.AddForce(force * -other.contacts[0].normal);
+			otherRb.velocity = Vector3.zero;
+			otherRb.AddForce(force * -other.contacts[0].normal);
 		}
 		
 		else

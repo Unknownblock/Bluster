@@ -32,46 +32,48 @@ public class CrossHair : MonoBehaviour
 
 	public GameObject middleDot;
 
-	private float startGap;
+	private float _startGap;
 
 	private void Start()
 	{
-		startGap = gap;
+		_startGap = gap;
 	}
 
 	public void Update()
 	{
 		SizeSettings();
 		ColorSettings();
-		gap = startGap + PlayerMovement.Instance.GetRb().velocity.magnitude;
+		gap = _startGap + PlayerMovement.Instance.GetRb().velocity.magnitude;
 	}
 
 	private void SizeSettings()
 	{
-		GetRectTransform(base.transform).sizeDelta = new Vector2(gap, gap);
-		GameObject[] array = differentParts;
-		for (int i = 0; i < array.Length; i++)
+		GetRectTransform(transform).sizeDelta = new Vector2(gap, gap);
+
+		foreach (var everyObject in differentParts)
 		{
-			GetRectTransform(array[i].transform).sizeDelta = new Vector2(thickness, length);
+			GetRectTransform(everyObject.transform).sizeDelta = new Vector2(thickness, length);
 		}
+		
 		GetRectTransform(middleDot.transform).sizeDelta = new Vector2(dotSize, dotSize);
+		
 		if (enableDot)
 		{
-			middleDot.SetActive(value: true);
+			middleDot.SetActive(true);
 		}
 		else if (!enableDot)
 		{
-			middleDot.SetActive(value: false);
+			middleDot.SetActive(false);
 		}
 	}
 
 	private void ColorSettings()
 	{
-		GameObject[] array = differentParts;
-		for (int i = 0; i < array.Length; i++)
+		foreach (var everyObject in differentParts)
 		{
-			GetImageComponent(array[i].transform).color = new Color32(red, green, blue, alpha);
+			GetImageComponent(everyObject.transform).color = new Color32(red, green, blue, alpha);
 		}
+
 		GetImageComponent(middleDot.transform).color = new Color32(red, green, blue, alpha);
 	}
 

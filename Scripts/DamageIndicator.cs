@@ -10,25 +10,25 @@ public class DamageIndicator : MonoBehaviour
 
 	public Vector3 pointing;
 
-	private Vector3 startScale;
+	private Vector3 _startScale;
 
-	public static DamageIndicator Instance { get; set; }
+	public static DamageIndicator Instance { get; private set; }
 
 	private void Awake()
 	{
 		Instance = this;
-		startScale = base.transform.GetChild(0).localScale;
+		_startScale = transform.GetChild(0).localScale;
 	}
 
 	private void Update()
 	{
 		Arrows();
-		base.transform.GetChild(0).localScale = Vector3.Lerp(base.transform.GetChild(0).localScale, Vector3.zero, Time.deltaTime * fadeOutSpeed);
+		transform.GetChild(0).localScale = Vector3.Lerp(transform.GetChild(0).localScale, Vector3.zero, Time.deltaTime * fadeOutSpeed);
 	}
 
 	public void StartFade()
 	{
-		base.transform.GetChild(0).localScale = startScale;
+		transform.GetChild(0).localScale = _startScale;
 	}
 
 	private void Arrows()

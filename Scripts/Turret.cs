@@ -138,7 +138,7 @@ public class Turret : MonoBehaviour
 			if (gameObject.GetComponent<EnemyBullet>() != null)
 			{
 				gameObject.GetComponent<EnemyBullet>().damage = (int)Random.Range(minDamage, maxDamage);
-				gameObject.GetComponent<EnemyBullet>().shooter = transform.gameObject;
+				gameObject.GetComponent<EnemyBullet>().SetShooter(transform.gameObject);
 			}
 			gameObject.transform.forward = shootPoint.forward + new Vector3(x, y, z);
 			gameObject.GetComponent<Rigidbody>().AddForce(shootForce * gameObject.transform.forward, ForceMode.VelocityChange);

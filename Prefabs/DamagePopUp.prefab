@@ -214,8 +214,8 @@ MonoBehaviour:
     serializedVersion: 2
     rgba: 4294967295
   disAppearTime: 2
-  fadeOutSpeed: 50
-  moveYSpeed: 3
+  fadeOutSpeed: 500
+  moveYSpeed: 1
   alpha: 255
   currentAmount: 0
   textMesh: {fileID: 2175428398379027112}

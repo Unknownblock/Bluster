@@ -1,20 +1,25 @@
 using TMPro;
 using UnityEngine;
 
-public class DamagePopUpColor
+public abstract class DamagePopUpColor
 {
-	public string name;
+	public Color32 Color;
 
-	public Color32 color;
+	public readonly int MaxDamage;
 
-	public int maxDamage;
+	public readonly int MinDamage;
 
-	public int minDamage;
+	protected DamagePopUpColor(Color32 color, int maxDamage, int minDamage)
+	{
+		Color = color;
+		MaxDamage = maxDamage;
+		MinDamage = minDamage;
+	}
 }
 
 public class DamagePopUp : MonoBehaviour
 {
-	public DamagePopUpColor[] damagePopUpColor;
+	private readonly DamagePopUpColor[] _damagePopUpColor;
 
 	public Color32 textColor;
 
@@ -31,6 +36,11 @@ public class DamagePopUp : MonoBehaviour
 	public TextMeshPro textMesh;
 
 	public Transform playerTransform;
+
+	public DamagePopUp(DamagePopUpColor[] damagePopUpColor)
+	{
+		_damagePopUpColor = damagePopUpColor;
+	}
 
 	public void SetUp(int amount)
 	{
@@ -65,13 +75,13 @@ public class DamagePopUp : MonoBehaviour
 
 	private void ColorCheck()
 	{
-		foreach (DamagePopUpColor popUpColor in damagePopUpColor)
+		foreach (DamagePopUpColor popUpColor in _damagePopUpColor)
 		{
-			if (popUpColor.maxDamage <= currentAmount || popUpColor.minDamage >= currentAmount) continue;
+			if (popUpColor.MaxDamage <= currentAmount || popUpColor.MinDamage >= currentAmount) continue;
 			
-			textColor.r = popUpColor.color.r;
-			textColor.g = popUpColor.color.g;
-			textColor.b = popUpColor.color.b;
+			textColor.r = popUpColor.Color.r;
+			textColor.g = popUpColor.Color.g;
+			textColor.b = popUpColor.Color.b;
 		}
 	}
 }

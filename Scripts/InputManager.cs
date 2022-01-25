@@ -16,6 +16,7 @@ public class InputManager : MonoBehaviour
 
     private void Awake()
     {
+        //Setting This To a Singleton
         Instance = this;
     }
 }

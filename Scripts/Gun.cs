@@ -113,10 +113,12 @@ public class Gun : MonoBehaviour
 			desiredBob = new Vector3(Mathf.PingPong(Time.time * bobSpeed, xBob) - xBob / 2f, Mathf.PingPong(Time.time * bobSpeed, yBob) - yBob / 2f, Mathf.PingPong(Time.time * bobSpeed, zBob) - zBob / 2f);
 			isBobbing = true;
 		}
+		
 		else
 		{
 			isBobbing = false;
 		}
+		
 		if (!isBobbing)
 		{
 			desiredBob = Vector3.Lerp(desiredBob, Vector3.zero, Time.deltaTime * gunGetBackSmooth);
@@ -143,11 +145,13 @@ public class Gun : MonoBehaviour
 			reloadRotation = Mathf.Lerp(0f, desiredReloadRotation, reloadProgress * reloadTime / reloadTime);
 			gunPosOffSet = Mathf.Lerp(gunPosOffSet, 0f, Time.deltaTime * reloadTime * 2f);
 		}
+		
 		else
 		{
 			reloadProgress = 0f;
 			reloadRotation = 0f;
 		}
+		
 		if (reloadRotation / 360f > spinsAmount)
 		{
 			spinsAmount++;

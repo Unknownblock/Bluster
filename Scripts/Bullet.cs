@@ -16,30 +16,32 @@ public class Bullet : MonoBehaviour
 		ExplodingTarget explodingTarget = other.gameObject.GetComponent<ExplodingTarget>(); //See If We've Hit a Exploding Target
 		Rigidbody otherRb = other.gameObject.GetComponent<Rigidbody>(); //See If We've Hit a Rigidbody
 		
-		if (target != null)
+		if (target != null) //If Hit a Target
 		{
-			target.TakeDamage(damage);
-			PrefabManager.Instance.DisplayDamagePopUp(damage, other.transform);
+			target.TakeDamage(damage); //Hit Damage
+			PrefabManager.Instance.DisplayDamagePopUp(damage, other.transform); //Damage Pop Up Instantiation
 		}
 		
-		if (explodingTarget != null)
+		if (explodingTarget != null) //If Hit an Exploding Target
 		{
-			explodingTarget.TakeDamage(damage);
-			PrefabManager.Instance.DisplayDamagePopUp(damage, other.transform);
+			explodingTarget.TakeDamage(damage); //Hit Damage
+			PrefabManager.Instance.DisplayDamagePopUp(damage, other.transform); //Damage Pop Up Instantiation
 		}
 		
-		if (otherRb != null)
+		if (otherRb != null) //If Hit a Rigidbody
 		{
-			otherRb.velocity = Vector3.zero;
-			otherRb.AddForce(force * -other.contacts[0].normal);
+			otherRb.velocity = Vector3.zero; //If Hit Reset The Velocity
+			otherRb.AddForce(force * -other.contacts[0].normal); //Add The Custom Force To The Rigidbody
 		}
 		
 		else
 		{
-			Destroy(Instantiate(bulletHole, other.contacts[0].point * 1.0025f, Quaternion.LookRotation(-other.contacts[0].normal)), 5f);
+			GameObject hitBulletHole = Instantiate(bulletHole, other.contacts[0].point * 1.0025f, Quaternion.LookRotation(-other.contacts[0].normal)); //Instantiate The Bullet Hole
+			Destroy(hitBulletHole, 5f); //Destroy The Instantiated Bullet Hole
 		}
-		
-		Destroy(Instantiate(impactEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal)), 1f);
-		Destroy(gameObject);
+
+		GameObject hitImpactEffect = Instantiate(impactEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal)); //Instantiate The Impact Effect
+		Destroy(hitImpactEffect, 1f); //Destroy The Instantiated Impact Effect
+		Destroy(gameObject); //Destroy The Bullet
 	}
 }

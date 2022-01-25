@@ -1,6 +1,17 @@
 using TMPro;
 using UnityEngine;
 
+public class DamagePopUpColor
+{
+	public string name;
+
+	public Color32 color;
+
+	public int maxDamage;
+
+	public int minDamage;
+}
+
 public class DamagePopUp : MonoBehaviour
 {
 	public DamagePopUpColor[] damagePopUpColor;
@@ -35,8 +46,8 @@ public class DamagePopUp : MonoBehaviour
 		Fade();
 		textColor.a = (byte)alpha;
 		textMesh.color = textColor;
-		base.transform.LookAt(2f * base.transform.position - playerTransform.position);
-		base.gameObject.transform.position += new Vector3(0f, moveYSpeed * Time.deltaTime, 0f);
+		transform.LookAt(2f * transform.position - playerTransform.position);
+		gameObject.transform.position += new Vector3(0f, moveYSpeed * Time.deltaTime, 0f);
 	}
 
 	private void Fade()
@@ -45,24 +56,22 @@ public class DamagePopUp : MonoBehaviour
 		if (disAppearTime <= 0f)
 		{
 			alpha -= (int)(fadeOutSpeed * Time.deltaTime);
-			if ((float)alpha <= 0f)
+			if (alpha <= 0f)
 			{
-				Object.Destroy(base.gameObject);
+				Destroy(gameObject);
 			}
 		}
 	}
 
 	private void ColorCheck()
 	{
-		DamagePopUpColor[] array = this.damagePopUpColor;
-		foreach (DamagePopUpColor damagePopUpColor in array)
+		foreach (DamagePopUpColor popUpColor in damagePopUpColor)
 		{
-			if (damagePopUpColor.maxDamage > currentAmount && damagePopUpColor.minDamage < currentAmount)
-			{
-				textColor.r = damagePopUpColor.color.r;
-				textColor.g = damagePopUpColor.color.g;
-				textColor.b = damagePopUpColor.color.b;
-			}
+			if (popUpColor.maxDamage <= currentAmount || popUpColor.minDamage >= currentAmount) continue;
+			
+			textColor.r = popUpColor.color.r;
+			textColor.g = popUpColor.color.g;
+			textColor.b = popUpColor.color.b;
 		}
 	}
 }

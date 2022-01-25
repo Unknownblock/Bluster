@@ -36,34 +36,34 @@ public class CrossHair : MonoBehaviour
 
 	private void Start()
 	{
-		_startGap = gap;
+		_startGap = gap; //Set The Start Size
 	}
 
 	public void Update()
 	{
 		SizeSettings();
 		ColorSettings();
-		gap = _startGap + PlayerMovement.Instance.GetRb().velocity.magnitude;
+		gap = _startGap + PlayerMovement.Instance.GetRb().velocity.magnitude; //Changing The CrossHair Gap With Player Speed
 	}
 
 	private void SizeSettings()
 	{
-		GetRectTransform(transform).sizeDelta = new Vector2(gap, gap);
+		GetRectTransform(transform).sizeDelta = new Vector2(gap, gap); //Setting The Gap
 
 		foreach (var everyObject in differentParts)
 		{
-			GetRectTransform(everyObject.transform).sizeDelta = new Vector2(thickness, length);
+			GetRectTransform(everyObject.transform).sizeDelta = new Vector2(thickness, length); //Setting The Length And Thickness Of All The CrossHair Parts
 		}
 		
-		GetRectTransform(middleDot.transform).sizeDelta = new Vector2(dotSize, dotSize);
+		GetRectTransform(middleDot.transform).sizeDelta = new Vector2(dotSize, dotSize); //Setting The Middle Dots Size
 		
 		if (enableDot)
 		{
-			middleDot.SetActive(true);
+			middleDot.SetActive(true); //Turning The Dot On
 		}
 		else if (!enableDot)
 		{
-			middleDot.SetActive(false);
+			middleDot.SetActive(false); //Turning The Dot Off
 		}
 	}
 
@@ -71,19 +71,19 @@ public class CrossHair : MonoBehaviour
 	{
 		foreach (var everyObject in differentParts)
 		{
-			GetImageComponent(everyObject.transform).color = new Color32(red, green, blue, alpha);
+			GetImageComponent(everyObject.transform).color = new Color32(red, green, blue, alpha); //Set The Color Of All The Parts Of The CrossHair
 		}
 
-		GetImageComponent(middleDot.transform).color = new Color32(red, green, blue, alpha);
+		GetImageComponent(middleDot.transform).color = new Color32(red, green, blue, alpha); //Set The Color Of The Middle Part
 	}
 
 	private static RectTransform GetRectTransform(Transform rectTransform)
 	{
-		return rectTransform.GetComponent<RectTransform>();
+		return rectTransform.GetComponent<RectTransform>(); //Get The RectTransform Component
 	}
 
 	private static Image GetImageComponent(Component image)
 	{
-		return image.GetComponent<Image>();
+		return image.GetComponent<Image>(); //Get The Image Component
 	}
 }

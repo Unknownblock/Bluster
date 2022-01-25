@@ -2,7 +2,14 @@ using UnityEngine;
 
 public class Turret : MonoBehaviour
 {
+	public enum DetectionMode
+	{
+		AreaDetection,
+		OneObjectDetection
+	}
+	
 	[Header("Turret Settings")]
+	
 	public DetectionMode detectionMode;
 
 	public float speed = 3f;
@@ -98,6 +105,7 @@ public class Turret : MonoBehaviour
 		else if (detectionMode == DetectionMode.OneObjectDetection && target != null)
 		{
 			float num = Vector3.Distance(target.transform.position, transform.position);
+			
 			if (num <= radius)
 			{
 				SetTarget(target.gameObject);

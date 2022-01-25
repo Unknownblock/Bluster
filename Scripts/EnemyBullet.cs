@@ -16,26 +16,36 @@ public class EnemyBullet : MonoBehaviour
 
 	public float force = 700f;
 
+	public void SetShooter(GameObject setShooter)
+	{
+		shooter = setShooter;
+	}
+	
 	private void OnCollisionEnter(Collision other)
 	{
 		int layer = other.gameObject.layer;
-		Physics.IgnoreLayerCollision(base.transform.gameObject.layer, base.gameObject.layer);
+		Physics.IgnoreLayerCollision(transform.gameObject.layer, gameObject.layer);
+		
 		Target component = other.gameObject.GetComponent<Target>();
+		
 		PlayerHealth component2 = other.gameObject.GetComponent<PlayerHealth>();
+		
 		ExplodingTarget component3 = other.gameObject.GetComponent<ExplodingTarget>();
+		
 		Rigidbody component4 = other.gameObject.GetComponent<Rigidbody>();
+		
 		if (layer == LayerMask.NameToLayer("Player"))
 		{
-			GameObject obj = Object.Instantiate(bloodEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal));
+			GameObject obj = Instantiate(bloodEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal));
 			if (component2 != null)
 			{
 				component2.Damage(damage, shooter);
 			}
-			Object.Destroy(obj, 1f);
+			Destroy(obj, 1f);
 		}
 		else
 		{
-			Object.Destroy(Object.Instantiate(impactEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal)), 1f);
+			Destroy(Instantiate(impactEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal)), 1f);
 		}
 		if (component != null)
 		{
@@ -56,8 +66,8 @@ public class EnemyBullet : MonoBehaviour
 		}
 		else
 		{
-			Object.Destroy(Object.Instantiate(bulletHole, other.contacts[0].point * 1.0025f, Quaternion.LookRotation(-other.contacts[0].normal)), 5f);
+			Destroy(Instantiate(bulletHole, other.contacts[0].point * 1.0025f, Quaternion.LookRotation(-other.contacts[0].normal)), 5f);
 		}
-		Object.Destroy(base.gameObject);
+		Destroy(gameObject, 0.5f);
 	}
 }

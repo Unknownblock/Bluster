@@ -341,10 +341,12 @@ public class PlayerMovement : MonoBehaviour
 			{
 				rb.velocity = new Vector3(velocity.x, 0f, velocity.z);
 			}
+			
 			else if (rb.velocity.y > 0.0)
 			{
 				rb.velocity = new Vector3(velocity.x, 0f, velocity.z);
 			}
+			
 			ParticleSystem.VelocityOverLifetimeModule velocityOverLifetime = Instantiate(playerJumpSmokeFx, transform.position, Quaternion.LookRotation(Vector3.up)).GetComponent<ParticleSystem>().velocityOverLifetime;
 			velocityOverLifetime.x = velocity.x * 2f;
 			velocityOverLifetime.z = velocity.z * 2f;

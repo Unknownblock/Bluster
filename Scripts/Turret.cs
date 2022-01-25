@@ -20,9 +20,9 @@ public class Turret : MonoBehaviour
 
 	public LayerMask targetMask;
 
-	private Vector3 lastKnownPosition = Vector3.zero;
+	public Vector3 lastKnownPosition = Vector3.zero;
 
-	private Quaternion lookAtRotation;
+	public Quaternion lookAtRotation;
 
 	[Header("Shooting Settings")]
 	public float fireRate;
@@ -81,8 +81,9 @@ public class Turret : MonoBehaviour
 		if (detectionMode == DetectionMode.AreaDetection)
 		{
 			//Getting The Object And Colliders In The Radius
+			// ReSharper disable once Unity.PreferNonAllocApi
 			results = Physics.OverlapSphere(gameObject.transform.position, radius, targetMask);
-			
+
 			foreach (Collider everyResult in results) //Selecting The Object To Look And Shoot At
 			{
 				if (results.Length > 0)
@@ -90,14 +91,14 @@ public class Turret : MonoBehaviour
 					WeaponInput();
 					SetTarget(everyResult.gameObject);
 				}
-				
+
 				else if (results.Length == 0)
 				{
 					SetTarget(null);
 				}
 			}
 		}
-		
+
 		//One Target Detection
 		else if (detectionMode == DetectionMode.OneObjectDetection && target != null)
 		{

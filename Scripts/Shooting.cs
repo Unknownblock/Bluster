@@ -41,6 +41,8 @@ public class Shooting : MonoBehaviour
 
 	public float currentBurstAmount;
 
+	public float nextTimeToFire;
+
 	[Header("CoolDown")]
 	public float shootCoolDown;
 	public float burstDelay;
@@ -149,17 +151,19 @@ public class Shooting : MonoBehaviour
 		//Different Firing Modes
 		if (fireMode == FireMode.SemiAutomatic)
 		{
-			if (Input.GetKeyDown(InputManager.Instance.shootKey))
+			if (Input.GetKeyDown(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire)
 			{
 				Shoot();
+				nextTimeToFire = Time.time + 1f / fireRate;
 			}
 		}
 
 		if (fireMode == FireMode.FullAutomatic)
 		{
-			if (Input.GetKey(InputManager.Instance.shootKey))
+			if (Input.GetKey(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire)
 			{
 				Shoot();
+				nextTimeToFire = Time.time + 1f / fireRate;
 			}
 		}
 		
@@ -175,9 +179,10 @@ public class Shooting : MonoBehaviour
 				canShoot = false;
 			}
 			
-			if (Input.GetKey(InputManager.Instance.shootKey))
+			if (Input.GetKey(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire)
 			{
 				Shoot();
+				nextTimeToFire = Time.time + 1f / fireRate;
 				
 				if (canShoot)
 				{
@@ -240,8 +245,7 @@ public class Shooting : MonoBehaviour
 		isShooting = true;
 		
 		Invoke(nameof(IsShooting), shootCoolDown);
-		FireRate();
-		
+
 		//Making The Magazine Ammo Less
 		currentMagazineAmmo--;
 		
@@ -310,18 +314,7 @@ public class Shooting : MonoBehaviour
 	{
 		canBurstShoot = true;
 	}
-
-	private void FireRate()
-	{
-		canShoot = false;
-		Invoke(nameof(ShootDelay), 1f / fireRate);
-	}
-
-	private void ShootDelay()
-	{
-		canShoot = true;
-	}
-
+	
 	private void IsShooting()
 	{
 		isShooting = false;

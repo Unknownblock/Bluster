@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3183956032465431398}
   - component: {fileID: 6808852642752331388}
   - component: {fileID: 773683109770243546}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: "\u064FSmoke"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -284,7 +284,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 1
+      scalar: 0.25
       minScalar: 0.1
       maxCurve:
         serializedVersion: 2
@@ -660,7 +660,7 @@ ParticleSystem:
     serializedVersion: 6
     enabled: 1
     type: 4
-    angle: 15
+    angle: 20
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
@@ -746,7 +746,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 0.25
+      value: 0.05
       mode: 0
       spread: 0
       speed:
@@ -4876,7 +4876,7 @@ GameObject:
   - component: {fileID: 2105753985316417013}
   - component: {fileID: 2105753985316417014}
   - component: {fileID: 2105753985316417009}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Missile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4974,21 +4974,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   distanceMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4023
   currentTarget: {fileID: 0}
-  explosionForce: 5000
+  explosionForce: 500
   explosionRadius: 10
-  force: 250
   minDistanceFromObjects: 2
-  speed: 100
-  rotateSpeed: 100
-  maxDistancePredict: 1
-  minDistancePredict: 1
-  maxTimePrediction: 500
-  standardPrediction: {x: 0, y: 0, z: 0}
-  deviatedPrediction: {x: 0, y: 0, z: 0}
-  deviationAmount: 1
-  deviationSpeed: 1
+  speed: 20000
+  returnSpeed: 500
+  lastKnownPosition: {x: 0, y: 0, z: 0}
+  lookAtRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!54 &2105753985316417009
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5016,7 +5010,7 @@ GameObject:
   - component: {fileID: 3851229424911079893}
   - component: {fileID: 3936934471799896357}
   - component: {fileID: 3480393347273569634}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Fire
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5290,7 +5284,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 1
+      scalar: 0.25
       minScalar: 0.1
       maxCurve:
         serializedVersion: 2
@@ -5752,7 +5746,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 0.1
+      value: 0.025
       mode: 0
       spread: 0
       speed:

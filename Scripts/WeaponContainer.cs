@@ -10,6 +10,8 @@ public class Weapon
     public bool canDrop;
     public bool haveTheWeapon;
     
+    public KeyCode changeInput;
+    
     public GameObject weaponPrefab;
     public GameObject dropWeaponPrefab;
 
@@ -36,9 +38,7 @@ public class WeaponContainer : MonoBehaviour
     
     public void FixedUpdate()
     {
-        NumInput();
-
-        currentSelected += (int) Input.mouseScrollDelta.y;
+        ChangeInput();
 
         if (currentSelected > weapons.Length - 1)
         {
@@ -78,60 +78,26 @@ public class WeaponContainer : MonoBehaviour
         }
     }
 
-    public void NumInput()
+    private void ChangeInput()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        currentSelected += (int) Input.mouseScrollDelta.y;
+
+        for (var i = 0; i < weapons.Length; i++)
         {
-            currentSelected = 0;
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            currentSelected = 1;
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            currentSelected = 2;
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            currentSelected = 3;
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            currentSelected = 4;
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            currentSelected = 5;
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Alpha7))
-        {
-            currentSelected = 6;
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Alpha8))
-        {
-            currentSelected = 7;
-        }
-        
-        if (Input.GetKeyDown(KeyCode.Alpha9))
-        {
-            currentSelected = 8;
+            if (Input.GetKeyDown(weapons[i].changeInput))
+            {
+                currentSelected = i;
+            }
         }
     }
 
     public void DropWeapon(Weapon weapon, string wantedName)
     {
         GameObject droppedWeapon = Instantiate(weapon.dropWeaponPrefab, weapon.weaponPrefab.transform.position, weapon.weaponPrefab.transform.rotation);
+        
         droppedWeapon.GetComponent<Rigidbody>().AddForce(MoveCamera.Instance.transform.forward * throwForce);
         
-        if (droppedWeapon == null)
+        if (droppedWeapon.GetComponent<PickUpWeapon>() == null)
         {
             droppedWeapon.AddComponent<PickUpWeapon>();
         }

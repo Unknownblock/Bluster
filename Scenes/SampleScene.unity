@@ -426,7 +426,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 306081901}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.34, y: -0.215, z: 1.75}
+  m_LocalPosition: {x: 0.34, y: -0.215, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1254326547}
@@ -479,7 +479,13 @@ MonoBehaviour:
   cameraPosition: {fileID: 1668489716}
   deSyncOffset: {x: 0, y: 0, z: 0}
   vaultOffset: {x: 0, y: 0, z: 0}
-  startFOV: 0
+  bobOffset: {x: 0, y: 0, z: 0}
+  desiredBob: {x: 0, y: 0, z: 0}
+  bobSpeed: 15
+  gettingBackSpeed: 0.5
+  minSomething: -3
+  maxSomething: 3
+  directionMultiplier: 0.15
   fov: 70
 --- !u!1 &425504486
 GameObject:
@@ -668,7 +674,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: f19a6a17fbb48ac4cbec21b43949a9ea, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -823,7 +829,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61e1dd19ff6d49e4185008b1f9f1d2e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  godMode: 0
+  godMode: 1
   canShoot: 1
   isShooting: 0
   isReloading: 0
@@ -847,7 +853,7 @@ MonoBehaviour:
   bulletsShot: 1
   bulletsSpread: 0
   range: 5
-  shootForce: 200
+  shootForce: 500
   minDamage: 25
   maxDamage: 95
   shootSound: {fileID: 1322872936}
@@ -902,8 +908,8 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: b61d571552897534b9c460e963912b32, type: 3}
-  m_PlayOnAwake: 1
+  m_audioClip: {fileID: 8300000, guid: b4a9594b1f163ef4584dac8a984fe48e, type: 3}
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -1124,8 +1130,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 795357de48514f84d880bff24bdc62d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnAmount: 5000
-  spawnSpread: 100
+  spawnAmount: 500
+  xSpawnSpread: 100
+  zSpawnSpread: 100
+  minHeight: 5
+  maxHeight: 10
   spawnObject: {fileID: 1743393340}
   spawnedObject: []
   canSpawn: 0
@@ -1137,7 +1146,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 741528164}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 9.09, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1321,7 +1330,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gunGetBackSmooth: 15
-  speedBobMultiplier: 0.05
+  speedBobMultiplier: 0.15
   speedBobSmooth: 10
   xBob: 0.06
   yBob: 0.04
@@ -1841,8 +1850,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.075
-      minScalar: 0.01
+      scalar: 0.035
+      minScalar: 0.005
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -2303,7 +2312,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 0.1
+      value: 0.05
       mode: 0
       spread: 0
       speed:
@@ -6511,7 +6520,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1254326547}
-  - component: {fileID: 1254326548}
   m_Layer: 0
   m_Name: WeaponContainer
   m_TagString: Untagged
@@ -6535,19 +6543,6 @@ Transform:
   m_Father: {fileID: 425504487}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1254326548
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1254326546}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d74308ba645e9fd40977669e83551c63, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fillAmount: 0
 --- !u!1 &1271363273
 GameObject:
   m_ObjectHideFlags: 0
@@ -6899,8 +6894,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.15
-      minScalar: 0.01
+      scalar: 0.075
+      minScalar: 0.005
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -7361,7 +7356,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 0.15
+      value: 0.075
       mode: 0
       spread: 0
       speed:
@@ -11453,7 +11448,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 976afa0cfbcfc904587e3205c460a039, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 0
   m_Pitch: 1
   Loop: 0
@@ -12114,8 +12109,6 @@ MonoBehaviour:
   crouchKey: 99
   sprintKey: 304
   jumpKey: 32
-  primaryWeaponKey: 49
-  secondaryWeaponKey: 50
 --- !u!4 &1774188460
 Transform:
   m_ObjectHideFlags: 0
@@ -12483,7 +12476,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 1
+      scalar: 0.75
       minScalar: 0.01
       maxCurve:
         serializedVersion: 2
@@ -12805,7 +12798,7 @@ ParticleSystem:
     gravityModifier:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 12.5
+      scalar: 500
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -14935,7 +14928,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
   NoiseModule:
-    enabled: 0
+    enabled: 1
     strength:
       serializedVersion: 2
       minMaxState: 0
@@ -17015,7 +17008,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh17882
+  m_Name: pb_Mesh16982
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2

@@ -12,24 +12,26 @@ public class ObjectSpawner : MonoBehaviour
 
 	private void Start()
 	{
-		timer = 0f;
+		timer = 0f; //Setting The Timer To Zero On Start
 	}
 
 	private void Update()
 	{
 		if (currentRocket == null)
 		{
-			timer += Time.deltaTime;
+			timer += Time.deltaTime; //Adding The Time
 			Spawn();
 		}
 	}
 
 	private void Spawn()
 	{
-		if (timer >= (float)timeTilNextSpawn)
+		if (timer >= timeTilNextSpawn) //If The Time Passed The Wanted Time
 		{
-			currentRocket = Object.Instantiate(rocketObject, base.transform.position, base.gameObject.transform.rotation);
-			timer = 0f;
+			//Spawn
+			currentRocket = Instantiate(rocketObject, transform.position, gameObject.transform.rotation);
+			
+			timer = 0f; //Setting The Timer To Zero
 		}
 	}
 }

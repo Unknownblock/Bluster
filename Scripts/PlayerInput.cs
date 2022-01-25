@@ -45,13 +45,16 @@ public class PlayerInput : MonoBehaviour
 
 	private void Awake()
 	{
+		//Setting This To a Singleton
 		Instance = this;
-		PlayerMovement.Instance = GetComponent<PlayerMovement>();
 	}
 
 	private void Start()
 	{
+		//Locking The Cursor
 		Cursor.lockState = CursorLockMode.Locked;
+		
+		//Making The Cursor Invisible
 		Cursor.visible = false;
 	}
 
@@ -82,6 +85,7 @@ public class PlayerInput : MonoBehaviour
 		horizontalMovement = 0f;
 		verticalMovement = 0f;
 		
+		//Horizontal Movement
 		if (Input.GetKey(InputManager.Instance.rightKey))
 		{
 			horizontalMovement += 1f;
@@ -92,6 +96,7 @@ public class PlayerInput : MonoBehaviour
 			horizontalMovement -= 1f;
 		}
 		
+		//Vertical Movement
 		if (Input.GetKey(InputManager.Instance.forwardKey))
 		{
 			verticalMovement += 1f;
@@ -101,7 +106,11 @@ public class PlayerInput : MonoBehaviour
 		{
 			verticalMovement -= 1f;
 		}
+		
+		//Moving Direction
 		moveDirection = PlayerMovement.Instance.orientation.forward * verticalMovement + PlayerMovement.Instance.orientation.right * horizontalMovement;
+		
+		//Custom Inputs
 		jumpInput = Input.GetKey(InputManager.Instance.jumpKey);
 		sprintInput = Input.GetKey(InputManager.Instance.sprintKey);
 		crouchInput = Input.GetKey(InputManager.Instance.crouchKey);
@@ -110,13 +119,24 @@ public class PlayerInput : MonoBehaviour
 
 	private void Look()
 	{
+		//Mouse Movement
 		mouseX = Input.GetAxisRaw("Mouse X");
 		mouseY = Input.GetAxisRaw("Mouse Y");
+		
+		//Mouse Movement With Sensitivity
 		yRotation += mouseX * sensitivity * 0.01f;
 		xRotation -= mouseY * sensitivity * 0.01f;
-		xRotation = Mathf.Clamp(xRotation, 0f - cameraLockRotation, cameraLockRotation);
+		
+		//Limitations For Camera xRotation
+		xRotation = Mathf.Clamp(xRotation, -cameraLockRotation, cameraLockRotation);
+		
+		//Camera Vector3 Rotation
 		cameraRot = new Vector3(xRotation + currentRotation.x, yRotation + currentRotation.y, tilt);
+		
+		//Setting The Camera Rotation
 		PlayerMovement.Instance.playerCam.transform.rotation = Quaternion.Euler(cameraRot);
+		
+		//Setting Orientations Rotation
 		PlayerMovement.Instance.orientation.transform.rotation = Quaternion.Euler(0f, yRotation, 0f);
 	}
 }

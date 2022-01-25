@@ -7,21 +7,17 @@ public class PlayerHealth : MonoBehaviour
 	public int maxHp = 100;
 
 	public int currentHp = 100;
-
-	[Header("UI Variables")]
-	public GameObject deadUI;
-
-	public GameObject normalUI;
-
+	
 	public GameObject healthUI;
 
 	public void Update()
 	{
 		if (healthUI != null)
 		{
-			healthUI.SetActive(value: true);
+			healthUI.SetActive(true);
 			healthUI.GetComponent<TextMeshProUGUI>().SetText(currentHp.ToString());
 		}
+		
 		if (currentHp < 0)
 		{
 			currentHp = 0;
@@ -31,9 +27,17 @@ public class PlayerHealth : MonoBehaviour
 
 	public void Damage(int damageDone, GameObject damageGo)
 	{
-		currentHp -= damageDone;
-		DamageIndicator.Instance.target = damageGo.transform;
-		DamageIndicator.Instance.StartFade();
+		currentHp -= damageDone; //Damage The Player
+		
+		DamageIndicator.Instance.target = damageGo.transform; //Setting The Target Of Damage Indicator
+		DamageIndicator.Instance.StartFade(); //Starting The Fade Of Damage Indicator
+
+		//Setting Limitations To The Current HP
+		if (currentHp > maxHp)
+		{
+			currentHp = maxHp;
+		}
+		
 		if (currentHp < 0)
 		{
 			currentHp = 0;
@@ -43,11 +47,12 @@ public class PlayerHealth : MonoBehaviour
 
 	private void KillPlayer()
 	{
+		//Setting The Player Details So He Cant Move
 		PlayerMovement.Instance.readyToMove = false;
 		PlayerMovement.Instance.readyToJump = false;
 		PlayerMovement.Instance.readyToCrouch = false;
-		deadUI.SetActive(value: true);
-		normalUI.SetActive(value: false);
+		
+		//Letting The Player Fall Or Rotate
 		PlayerMovement.Instance.gameObject.GetComponent<Rigidbody>().freezeRotation = false;
 	}
 }

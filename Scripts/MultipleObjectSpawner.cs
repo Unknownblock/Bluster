@@ -72,6 +72,7 @@ public class MultipleObjectSpawner : MonoBehaviour
 		float ySpread = Random.Range(minHeight, maxHeight);
 		float zSpread = Random.Range(zSpawnSpread, -zSpawnSpread);
 
+		//Spawning The Objects With Spread
 		if (spawnObject != null)
 		{
 			spawnedObject.Add(Instantiate(spawnObject, gameObject.transform.position + new Vector3(xSpread, ySpread, zSpread), Quaternion.identity, transform));

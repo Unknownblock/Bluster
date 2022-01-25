@@ -88,11 +88,8 @@ public class PlayerMovement : MonoBehaviour
 
 	[Header("Crouch")]
 	public Vector3 crouchScale = new Vector3(1f, 1f, 1f);
-
 	public float crouchTilt;
-
 	public float crouchPos = 0.65f;
-
 	public float slideForce = 500f;
 
 	[Header("Fall Damage")]
@@ -117,36 +114,40 @@ public class PlayerMovement : MonoBehaviour
 
 	private Rigidbody rb;
 
-	public static PlayerMovement Instance { get; set; }
+	public static PlayerMovement Instance { get; private set; }
 
 	private void Awake()
 	{
+		//Setting This To a Singleton
 		Instance = this;
 	}
 
 	private void Start()
 	{
-		rb = GetComponent<Rigidbody>();
-		playerScale = transform.localScale;
-		Cursor.lockState = CursorLockMode.Locked;
-		Cursor.visible = false;
-		rb.freezeRotation = true;
+		rb = GetComponent<Rigidbody>(); //Players Rigidbody
+		playerScale = transform.localScale; //Player Start Scale
+		rb.freezeRotation = true; //Freezing The Rotation Of Rigidbody
 	}
 
 	private void Update()
 	{
 		ControlDrag();
-		velocity = rb.velocity;
+		
+		
+		velocity = rb.velocity; //Velocity Equals Player Rigidbody Velocity 
+		
+		//Awake The Rigidbody If Grounded
 		if (isGrounded)
 		{
 			rb.WakeUp();
 		}
-		moveDirection = playerInput.moveDirection;
+		
+		moveDirection = playerInput.moveDirection; //Setting PlayerMovements Move Direction
 	}
 
 	private void LateUpdate()
 	{
-		fallSpeed = rb.velocity.y;
+		fallSpeed = rb.velocity.y; //Late Updates Fall Speed
 	}
 
 	private void FixedUpdate()
@@ -158,12 +159,15 @@ public class PlayerMovement : MonoBehaviour
 	{
 		if (!isSliding && isGrounded)
 		{
-			float num = rb.velocity.magnitude;
-			if (num > 20f)
+			float velocityMagnitude = rb.velocity.magnitude;
+			
+			if (velocityMagnitude > 20f)
 			{
-				num = 20f;
+				velocityMagnitude = 20f;
 			}
-			footStepDistance += num;
+			
+			footStepDistance += velocityMagnitude;
+			
 			if (footStepDistance > 300f)
 			{
 				footStepDistance = 0f;
@@ -176,10 +180,17 @@ public class PlayerMovement : MonoBehaviour
 	{
 		if (!isSliding && readyToCrouch)
 		{
-			isSliding = true;
-			readyToMove = false;
+			isSliding = true; //IsSliding Equals True
+			
+			readyToMove = false; //Ready To Move Equals False
+			
+			//Setting The LocalScale To Crouch Scale
 			transform.localScale = crouchScale;
+			
+			//Setting The Crouch Position
 			transform.position = new Vector3(gameObject.transform.position.x, transform.position.y - crouchPos, gameObject.transform.transform.position.z);
+			
+			//Adding Force Forward
 			if (!(rb.velocity.magnitude <= 0.5) && isGrounded)
 			{
 				rb.AddForce(orientation.transform.forward * slideForce);
@@ -192,24 +203,34 @@ public class PlayerMovement : MonoBehaviour
 	{
 		if (isSliding)
 		{
+			//IsSliding Equals False
 			isSliding = false;
+			
+			//Ready To Move Equals True
 			readyToMove = true;
+			
+			//Setting The LocalScale To Start Player Scale
 			transform.localScale = playerScale;
+			
+			//Setting The Normal Player Position
 			transform.position = new Vector3(gameObject.transform.position.x, transform.position.y + crouchPos, gameObject.transform.gameObject.transform.position.z);
 		}
 	}
 
 	private void ControlDrag()
 	{
+		//Setting The Rigidbody Drag
 		if (isSliding)
 		{
-			rb.AddForce(new Vector3(0f - velocity.x * slideDrag, 0f, 0f - velocity.z * slideDrag));
+			rb.drag = slideDrag;
 		}
-		else if (isGrounded)
+		
+		if (isGrounded)
 		{
-			rb.AddForce(new Vector3(0f - velocity.x * groundDrag, 0f, 0f - velocity.z * groundDrag));
+			rb.drag = groundDrag;;
 		}
-		else if (!isGrounded)
+
+		else
 		{
 			rb.drag = airDrag;
 		}
@@ -305,7 +326,10 @@ public class PlayerMovement : MonoBehaviour
 			{
 				jumps--;
 			}
+			
+			rb.drag = airDrag;
 			readyToJump = false;
+			
 			CancelInvoke(nameof(JumpCooldown));
 			Invoke(nameof(JumpCooldown), 0.25f);
 			resetJumpCounter = 0;

@@ -18,6 +18,7 @@ public class MultipleObjectSpawner : MonoBehaviour
 
 	private void Update()
 	{
+		//Spawn The Object For Each Spawn Amount
 		for (var i = 0; i < spawnAmount; i++)
 		{
 			Spawn();
@@ -28,26 +29,31 @@ public class MultipleObjectSpawner : MonoBehaviour
 			return;
 		}
 		
+		//List Of Spawned Object
 		GameObject[] array = spawnedObject.ToArray();
 		
 		foreach (GameObject everyObject in array)
 		{
+			//Removing The Array Part If Null
 			if (everyObject == null)
 			{
 				spawnedObject.Remove(gameObject);
 			}
 			
+			//Setting Every Array Object Active If Not Null
 			if (everyObject != null)
 			{
 				everyObject.SetActive(true);
 			}
 		}
 		
+		//Spawning If No Array Part Exists
 		if (array.Length == 0)
 		{
 			canSpawn = true;
 		}
 		
+		//Not Spawning If an Array Exists
 		if (array.Length > 0)
 		{
 			canSpawn = false;
@@ -61,6 +67,7 @@ public class MultipleObjectSpawner : MonoBehaviour
 			return;
 		}
 		
+		//Spawn Spreads
 		float xSpread = Random.Range(xSpawnSpread, -xSpawnSpread);
 		float ySpread = Random.Range(minHeight, maxHeight);
 		float zSpread = Random.Range(zSpawnSpread, -zSpawnSpread);

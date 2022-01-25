@@ -1,25 +1,22 @@
 using TMPro;
 using UnityEngine;
+using System;
 
-public abstract class DamagePopUpColor
+[Serializable]
+public class DamagePopUpColor
 {
-	public Color32 Color;
+	public string name;
 
-	public readonly int MaxDamage;
+	public Color32 color;
 
-	public readonly int MinDamage;
+	public int maxDamage;
 
-	protected DamagePopUpColor(Color32 color, int maxDamage, int minDamage)
-	{
-		Color = color;
-		MaxDamage = maxDamage;
-		MinDamage = minDamage;
-	}
+	public int minDamage;
 }
 
 public class DamagePopUp : MonoBehaviour
 {
-	private readonly DamagePopUpColor[] _damagePopUpColor;
+	public DamagePopUpColor[] damagePopUpColor;
 
 	public Color32 textColor;
 
@@ -37,11 +34,6 @@ public class DamagePopUp : MonoBehaviour
 
 	public Transform playerTransform;
 
-	public DamagePopUp(DamagePopUpColor[] damagePopUpColor)
-	{
-		_damagePopUpColor = damagePopUpColor;
-	}
-
 	public void SetUp(int amount)
 	{
 		playerTransform = PlayerMovement.Instance.transform;
@@ -54,7 +46,7 @@ public class DamagePopUp : MonoBehaviour
 	{
 		ColorCheck();
 		Fade();
-		textColor.a = (byte)alpha;
+		textColor.a = (byte) alpha;
 		textMesh.color = textColor;
 		transform.LookAt(2f * transform.position - playerTransform.position);
 		gameObject.transform.position += new Vector3(0f, moveYSpeed * Time.deltaTime, 0f);
@@ -65,7 +57,7 @@ public class DamagePopUp : MonoBehaviour
 		disAppearTime -= Time.deltaTime;
 		if (disAppearTime <= 0f)
 		{
-			alpha -= (int)(fadeOutSpeed * Time.deltaTime);
+			alpha -= (int) (fadeOutSpeed * Time.deltaTime);
 			if (alpha <= 0f)
 			{
 				Destroy(gameObject);
@@ -75,13 +67,14 @@ public class DamagePopUp : MonoBehaviour
 
 	private void ColorCheck()
 	{
-		foreach (DamagePopUpColor popUpColor in _damagePopUpColor)
+		foreach (DamagePopUpColor popUpColor in damagePopUpColor)
 		{
-			if (popUpColor.MaxDamage <= currentAmount || popUpColor.MinDamage >= currentAmount) continue;
-			
-			textColor.r = popUpColor.Color.r;
-			textColor.g = popUpColor.Color.g;
-			textColor.b = popUpColor.Color.b;
+			if (popUpColor.maxDamage > currentAmount && popUpColor.minDamage < currentAmount)
+			{
+				textColor.r = popUpColor.color.r;
+				textColor.g = popUpColor.color.g;
+				textColor.b = popUpColor.color.b;
+			}
 		}
 	}
 }

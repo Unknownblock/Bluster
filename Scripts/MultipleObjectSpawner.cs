@@ -5,7 +5,10 @@ public class MultipleObjectSpawner : MonoBehaviour
 {
 	public int spawnAmount;
 
-	public float spawnSpread;
+	public float xSpawnSpread;
+	public float zSpawnSpread;
+	public float minHeight;
+	public float maxHeight;
 
 	public GameObject spawnObject;
 
@@ -15,33 +18,37 @@ public class MultipleObjectSpawner : MonoBehaviour
 
 	private void Update()
 	{
-		int num = 0;
-		for (int i = 0; i < spawnAmount; i++)
+		for (var i = 0; i < spawnAmount; i++)
 		{
 			Spawn();
 		}
+		
 		if (spawnedObject == null)
 		{
 			return;
 		}
+		
 		GameObject[] array = spawnedObject.ToArray();
-		foreach (GameObject gameObject in array)
+		
+		foreach (GameObject everyObject in array)
 		{
-			if (gameObject == null)
+			if (everyObject == null)
 			{
 				spawnedObject.Remove(gameObject);
-				num++;
 			}
-			if (gameObject != null)
+			
+			if (everyObject != null)
 			{
-				gameObject.SetActive(value: true);
+				everyObject.SetActive(true);
 			}
 		}
-		if (num == spawnedObject.Count)
+		
+		if (array.Length == 0)
 		{
 			canSpawn = true;
 		}
-		if (num < spawnedObject.Count)
+		
+		if (array.Length > 0)
 		{
 			canSpawn = false;
 		}
@@ -53,18 +60,14 @@ public class MultipleObjectSpawner : MonoBehaviour
 		{
 			return;
 		}
+		
+		float xSpread = Random.Range(xSpawnSpread, -xSpawnSpread);
+		float ySpread = Random.Range(minHeight, maxHeight);
+		float zSpread = Random.Range(zSpawnSpread, -zSpawnSpread);
+
 		if (spawnObject != null)
 		{
-			spawnedObject.Add(Object.Instantiate(spawnObject, base.gameObject.transform.position, Quaternion.identity, base.transform));
-		}
-		float x = Random.Range(spawnSpread, 0f - spawnSpread);
-		float z = Random.Range(spawnSpread, 0f - spawnSpread);
-		foreach (GameObject item in spawnedObject)
-		{
-			if (item != null)
-			{
-				item.transform.position = base.transform.position + new Vector3(x, base.gameObject.transform.position.y, z);
-			}
+			spawnedObject.Add(Instantiate(spawnObject, gameObject.transform.position + new Vector3(xSpread, ySpread, zSpread), Quaternion.identity, transform));
 		}
 	}
 }

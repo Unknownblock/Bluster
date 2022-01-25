@@ -78,7 +78,7 @@ public class Gun : MonoBehaviour
 
 	private void Start()
 	{
-		startPos = base.transform.localPosition;
+		startPos = transform.localPosition;
 	}
 
 	private void Update()
@@ -92,23 +92,23 @@ public class Gun : MonoBehaviour
 		desX = Mathf.Lerp(desX, b, Time.fixedDeltaTime * swaySpeed);
 		desY = Mathf.Lerp(desY, b2, Time.fixedDeltaTime * swaySpeed);
 		Rotation(new Vector2(desX, desY));
-		base.transform.localPosition = Vector3.Lerp(base.transform.localPosition, startPos + new Vector3(desX, desY, 0f) + desiredBob + recoilOffset + new Vector3(0f, 0f - gunPosOffSet, 0f) + speedBob, 15f * Time.fixedDeltaTime);
+		transform.localPosition = Vector3.Lerp(transform.localPosition, startPos + new Vector3(desX, desY, 0f) + desiredBob + recoilOffset + new Vector3(0f, 0f - gunPosOffSet, 0f) + speedBob, 15f * Time.fixedDeltaTime);
 	}
 
 	private void Rotation(Vector2 offset)
 	{
 		float num = offset.magnitude * 0.03f;
-		if ((double)offset.x < 0.0)
+		if (offset.x < 0.0)
 		{
 			num = 0f - num;
 		}
-		Vector3 euler = new Vector3((float)((double)offset.y * 80.0) + reloadRotation, (0f - offset.x) * 40f, num * 50f) + recoilRotation;
-		base.transform.localRotation = Quaternion.Lerp(base.transform.localRotation, Quaternion.Euler(euler), Time.deltaTime * 25f);
+		Vector3 euler = new Vector3((float)(offset.y * 80.0) + reloadRotation, (0f - offset.x) * 40f, num * 50f) + recoilRotation;
+		transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(euler), Time.deltaTime * 25f);
 	}
 
 	private void MovementBob()
 	{
-		if ((double)PlayerMovement.Instance.GetRb().velocity.magnitude > 4.0 && PlayerMovement.Instance.isGrounded && !PlayerMovement.Instance.isSliding)
+		if (PlayerMovement.Instance.GetRb().velocity.magnitude > 4.0 && PlayerMovement.Instance.isGrounded && !PlayerMovement.Instance.isSliding)
 		{
 			desiredBob = new Vector3(Mathf.PingPong(Time.time * bobSpeed, xBob) - xBob / 2f, Mathf.PingPong(Time.time * bobSpeed, yBob) - yBob / 2f, Mathf.PingPong(Time.time * bobSpeed, zBob) - zBob / 2f);
 			isBobbing = true;
@@ -148,7 +148,7 @@ public class Gun : MonoBehaviour
 			reloadProgress = 0f;
 			reloadRotation = 0f;
 		}
-		if (reloadRotation / 360f > (float)spinsAmount)
+		if (reloadRotation / 360f > spinsAmount)
 		{
 			spinsAmount++;
 		}

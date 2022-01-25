@@ -3,35 +3,43 @@ using UnityEngine;
 public class Explosion : MonoBehaviour
 {
 	public float radius;
-
 	public float force;
+	public float disAppearingTime = 1;
 
 	private void Start()
 	{
-		Explode();
+		Explode(); //Explosion
 	}
 
 	private void Explode()
 	{
-		Collider[] array = Physics.OverlapSphere(base.gameObject.transform.position, radius);
-		foreach (Collider collider in array)
+		Collider[] areaColliders = Physics.OverlapSphere(gameObject.transform.position, radius); //Detecting Objects In an Area
+		
+		foreach (Collider everyColliders in areaColliders)
 		{
-			Rigidbody component = collider.GetComponent<Rigidbody>();
-			Target component2 = collider.GetComponent<Target>();
-			ExplodingTarget component3 = collider.GetComponent<ExplodingTarget>();
-			if (component != null && collider.GetComponent<Transform>().gameObject.layer != LayerMask.NameToLayer("Bullet"))
+			Rigidbody areaRigidBody = everyColliders.GetComponent<Rigidbody>(); //Areas Rigidbody
+			Target areaTarget = everyColliders.GetComponent<Target>(); //Areas Normal Target
+			ExplodingTarget areaExplodingTarget = everyColliders.GetComponent<ExplodingTarget>(); //Areas Exploding Target
+			
+			if (areaRigidBody != null && everyColliders.GetComponent<Transform>().gameObject.layer != LayerMask.NameToLayer("Bullet"))
 			{
-				component.AddExplosionForce(force, base.transform.position, radius);
+				areaRigidBody.AddExplosionForce(force, transform.position, radius); //Adding Explosion Force
 			}
-			if (component3 != null && component3 != base.transform.GetComponent<ExplodingTarget>())
+			
+			if (areaExplodingTarget != null && areaExplodingTarget != transform.GetComponent<ExplodingTarget>())
 			{
-				component3.TakeDamage((int)(radius - Vector3.Distance(component3.gameObject.transform.position, base.transform.position)));
+				//Damaging The Targets Near The Explosion
+				areaExplodingTarget.TakeDamage((int)(radius - Vector3.Distance(areaExplodingTarget.gameObject.transform.position, transform.position)));
 			}
-			if (component2 != null)
+			
+			if (areaTarget != null)
 			{
-				component2.TakeDamage((int)(radius - Vector3.Distance(component2.gameObject.transform.position, base.transform.position)));
+				//Damaging The Targets Near The Explosion
+				areaTarget.TakeDamage((int)(radius - Vector3.Distance(areaTarget.gameObject.transform.position, transform.position)));
 			}
 		}
-		Object.Destroy(base.gameObject, 1f);
+		
+		//Destroying The Explosion After Some Time
+		Destroy(gameObject, disAppearingTime);
 	}
 }

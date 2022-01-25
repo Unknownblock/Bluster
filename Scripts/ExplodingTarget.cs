@@ -11,15 +11,20 @@ public class ExplodingTarget : MonoBehaviour
 
 	public void TakeDamage(int damage)
 	{
-		health -= damage;
+		health -= damage; //Damaging This Object
+		
 		if (health <= 0f)
 		{
-			GameObject obj = Object.Instantiate(PrefabManager.Instance.explosion, base.transform.position, Quaternion.identity);
-			obj.GetComponent<Explosion>().radius = radius;
-			obj.GetComponent<Explosion>().force = force;
-			obj.GetComponent<ParticleSystem>().Play();
-			Object.Destroy(obj, 2f);
-			Object.Destroy(base.gameObject);
+			//Instantiating The Explosion
+			GameObject explosion = Instantiate(PrefabManager.Instance.explosion, transform.position, Quaternion.identity);
+			
+			explosion.GetComponent<Explosion>().radius = radius; //Setting Explosions Radius
+			explosion.GetComponent<Explosion>().force = force; //Setting Explosions Force To Other Object
+			explosion.GetComponent<ParticleSystem>().Play(); //Playing The Explosion Particle Effect
+			
+			Destroy(explosion, 2f); //Destroying The Explosion Effect
+			
+			Destroy(gameObject); //Destroying The Object
 		}
 	}
 }

@@ -13,61 +13,73 @@ public class EnemyBullet : MonoBehaviour
 
 	[Header("Amount Variables")]
 	public int damage;
-
 	public float force = 700f;
 
 	public void SetShooter(GameObject setShooter)
 	{
-		shooter = setShooter;
+		shooter = setShooter; //Setting The Shooter
 	}
 	
 	private void OnCollisionEnter(Collision other)
 	{
-		int layer = other.gameObject.layer;
-		Physics.IgnoreLayerCollision(transform.gameObject.layer, gameObject.layer);
+		Target target = other.gameObject.GetComponent<Target>(); //Hit Target Component
 		
-		Target component = other.gameObject.GetComponent<Target>();
+		PlayerHealth player = other.gameObject.GetComponent<PlayerHealth>(); //Hit Player Health Component
 		
-		PlayerHealth component2 = other.gameObject.GetComponent<PlayerHealth>();
+		ExplodingTarget explodingTarget = other.gameObject.GetComponent<ExplodingTarget>(); //Hit Exploding Target Component
 		
-		ExplodingTarget component3 = other.gameObject.GetComponent<ExplodingTarget>();
+		Rigidbody hitRigidbody = other.gameObject.GetComponent<Rigidbody>(); //Hit Rigidbody Component
 		
-		Rigidbody component4 = other.gameObject.GetComponent<Rigidbody>();
-		
-		if (layer == LayerMask.NameToLayer("Player"))
+		if (other.gameObject.layer == LayerMask.NameToLayer("Player"))
 		{
-			GameObject obj = Instantiate(bloodEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal));
-			if (component2 != null)
+			if (player != null)
 			{
-				component2.Damage(damage, shooter);
+				player.Damage(damage, shooter); //Damaging The Player
 			}
-			Destroy(obj, 1f);
+			
+			//Blood Effect
+			GameObject blood = Instantiate(bloodEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal));
+			
+			Destroy(blood, 1f); //Destroy The Blood Effect
 		}
+		
 		else
 		{
-			Destroy(Instantiate(impactEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal)), 1f);
+			//Impact Effect
+			GameObject impact = Instantiate(impactEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal));
+			
+			Destroy(impact, 1f); //Destroy The Impact Effect
 		}
-		if (component != null)
+		
+		if (target != null)
 		{
-			component.TakeDamage(damage);
+			target.TakeDamage(damage); //Damaging The Target
 		}
-		if (component3 != null)
+		
+		if (explodingTarget != null)
 		{
-			component3.TakeDamage(damage);
+			explodingTarget.TakeDamage(damage); //Damaging The Exploding Target
 		}
-		if ((bool)component4 && layer == LayerMask.NameToLayer("Player"))
+		
+		if (hitRigidbody != null && other.gameObject.layer == LayerMask.NameToLayer("Player"))
 		{
-			component4.velocity = Vector3.zero;
+			hitRigidbody.velocity = Vector3.zero; //Setting The Velocity To Zero
 		}
-		else if ((bool)component4 && layer != LayerMask.NameToLayer("Player"))
+		
+		else if (hitRigidbody != null && other.gameObject.layer != LayerMask.NameToLayer("Player"))
 		{
-			component4.velocity = Vector3.zero;
-			component4.AddForce(force * -other.contacts[0].normal);
+			hitRigidbody.velocity = Vector3.zero; //Setting The Velocity To Zero
+			hitRigidbody.AddForce(force * -other.contacts[0].normal); //Adding Force To The Rigidbody Object
 		}
+		
 		else
 		{
-			Destroy(Instantiate(bulletHole, other.contacts[0].point * 1.0025f, Quaternion.LookRotation(-other.contacts[0].normal)), 5f);
+			//Spawning The Bullet Hole
+			GameObject spawnedBulletHole = Instantiate(bulletHole, other.contacts[0].point * 1.0025f, Quaternion.LookRotation(-other.contacts[0].normal));
+			
+			Destroy(spawnedBulletHole, 5f); //Destroy The Bullet Hole Effect
 		}
-		Destroy(gameObject, 0.5f);
+		
+		Destroy(gameObject, 0.5f); //Destroying The Projectile / Bullet
 	}
 }

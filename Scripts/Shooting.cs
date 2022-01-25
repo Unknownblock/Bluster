@@ -4,6 +4,13 @@ using UnityEngine;
 
 public class Shooting : MonoBehaviour
 {
+	public enum FireMode
+	{
+		SemiAutomatic,
+		FullAutomatic,
+		BurstFire
+	}
+
 	[Header("Bool Variables")]
 	public bool godMode;
 

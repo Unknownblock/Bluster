@@ -31,8 +31,6 @@ public class Turret : MonoBehaviour
 
 	public bool isShooting;
 
-	private float alpha;
-
 	[Header("Bullet Settings")]
 	public int bulletsShot;
 
@@ -53,41 +51,37 @@ public class Turret : MonoBehaviour
 
 	public GameObject projectile;
 
-	public GameObject smokeTrail;
-
 	public GameObject muzzleFlash;
 
 	public GameObject target;
 
 	public GameObject currentTarget;
 
-	private int amount;
-
 	public void Update()
 	{
-		alpha -= Time.deltaTime * 1f;
-		if (isShooting)
-		{
-			alpha = 1f;
-		}
-		smokeTrail.GetComponent<TrailRenderer>().startColor = new Color(1f, 1f, 1f, alpha);
-		if ((bool)currentTarget)
+		//Rotating Towards The Target
+		if (currentTarget != null)
 		{
 			if (lastKnownPosition != currentTarget.transform.position)
 			{
 				lastKnownPosition = currentTarget.transform.position;
+				
 				lookAtRotation = Quaternion.LookRotation(lastKnownPosition - transform.position);
 			}
+			
 			if (transform.rotation != lookAtRotation)
 			{
 				transform.rotation = Quaternion.RotateTowards(transform.rotation, lookAtRotation, speed * Time.deltaTime);
 			}
 		}
+		
+		//Detecting The Target By The Area Around The Turret
 		if (detectionMode == DetectionMode.AreaDetection)
 		{
+			//Getting The Object And Colliders In The Radius
 			Collider[] results = Physics.OverlapSphere(gameObject.transform.position, radius, targetMask);
 			
-			foreach (Collider everyResult in results)
+			foreach (Collider everyResult in results) //Selecting The Object To Look And Shoot At
 			{
 				if (results.Length > 0)
 				{
@@ -102,16 +96,19 @@ public class Turret : MonoBehaviour
 			}
 		}
 		
+		//One Target Detection
 		else if (detectionMode == DetectionMode.OneObjectDetection && target != null)
 		{
-			float num = Vector3.Distance(target.transform.position, transform.position);
+			//Calculating The Distance From The Turret
+			float distanceFromTarget = Vector3.Distance(target.transform.position, transform.position);
 			
-			if (num <= radius)
+			if (distanceFromTarget <= radius) //Setting The Object To Our CurrentTarget If In Radius
 			{
 				SetTarget(target.gameObject);
 				WeaponInput();
 			}
-			else if (num > radius)
+			
+			else if (distanceFromTarget > radius) //Setting It To Null
 			{
 				SetTarget(null);
 			}
@@ -120,6 +117,7 @@ public class Turret : MonoBehaviour
 
 	private void WeaponInput()
 	{
+		//Shoot When The Target Is In Front Of The Turret
 		if (Time.time >= nextTimeToFire && Physics.Raycast(shootPoint.transform.position, shootPoint.forward, out var hitInfo, radius) && hitInfo.transform.gameObject == currentTarget)
 		{
 			nextTimeToFire = Time.time + 1f / fireRate;
@@ -131,28 +129,44 @@ public class Turret : MonoBehaviour
 	{
 		for (int i = 0; i < bulletsShot; i++)
 		{
-			GameObject gameObject = Instantiate(projectile, shootPoint.gameObject.transform.position, Quaternion.identity);
-			float x = Random.Range(bulletsSpread, 0f - bulletsSpread);
-			float y = Random.Range(0f - bulletsSpread, bulletsSpread);
-			float z = Random.Range(bulletsSpread, 0f - bulletsSpread);
-			if (gameObject.GetComponent<EnemyBullet>() != null)
+			//Instantiating The Bullet
+			GameObject bullet = Instantiate(projectile, shootPoint.gameObject.transform.position, Quaternion.identity);
+			
+			//Setting The Bullet Spread
+			float xSpread = Random.Range(bulletsSpread, 0f - bulletsSpread);
+			float ySpread = Random.Range(0f - bulletsSpread, bulletsSpread);
+			float zSpread = Random.Range(bulletsSpread, 0f - bulletsSpread);
+			
+			//Bullet Damage With Random Value
+			if (bullet.GetComponent<EnemyBullet>() != null)
 			{
-				gameObject.GetComponent<EnemyBullet>().damage = (int)Random.Range(minDamage, maxDamage);
-				gameObject.GetComponent<EnemyBullet>().SetShooter(transform.gameObject);
+				bullet.GetComponent<EnemyBullet>().damage = (int)Random.Range(minDamage, maxDamage);
+				bullet.GetComponent<EnemyBullet>().SetShooter(transform.gameObject);
 			}
-			gameObject.transform.forward = shootPoint.forward + new Vector3(x, y, z);
-			gameObject.GetComponent<Rigidbody>().AddForce(shootForce * gameObject.transform.forward, ForceMode.VelocityChange);
-			Destroy(gameObject, range);
+			
+			//Rotating The Bullet By The Spread
+			bullet.transform.forward = shootPoint.forward + new Vector3(xSpread, ySpread, zSpread);
+			
+			//Adding Force To The Bullet By The Shoot Force
+			bullet.GetComponent<Rigidbody>().AddForce(shootForce * bullet.transform.forward, ForceMode.VelocityChange);
+			
+			//Adding Range To The Bullets
+			Destroy(bullet, range);
 		}
-		shootSound.Play();
-		isShooting = true;
 		
+		//Is Shooting Bool With CoolDown
+		isShooting = true;
 		Invoke(nameof(IsShooting), shootCoolDown);
 		
-		GameObject obj = Instantiate(muzzleFlash, muzzleFlash.transform.position, Quaternion.identity);
-		smokeTrail.GetComponent<TrailRenderer>().colorGradient.alphaKeys[0].alpha = 1f;
-		obj.GetComponent<ParticleSystem>().Play();
-		Destroy(obj, 2f);
+		//Playing The Shooting Sound
+		shootSound.Play();
+		
+		//Muzzle Flash Instantiation
+		GameObject muzzleFlashFx = Instantiate(muzzleFlash, muzzleFlash.transform.position, Quaternion.identity);
+		muzzleFlashFx.GetComponent<ParticleSystem>().Play();
+		
+		//Destroying The Muzzle Flash
+		Destroy(muzzleFlashFx, 2f);
 	}
 
 	private void SetTarget(GameObject wantedTarget)

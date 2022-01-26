@@ -250,7 +250,7 @@ public class Shooting : MonoBehaviour
 		//Making The Magazine Ammo Less
 		currentMagazineAmmo--;
 		
-		//Shooting Sound
+		//Playing The Shooting Sound
 		shootSound.Play();
 		
 		//Muzzle Flash Instantiation

@@ -146,7 +146,9 @@ public class Turret : MonoBehaviour
 		}
 		shootSound.Play();
 		isShooting = true;
-		Invoke("IsShooting", shootCoolDown);
+		
+		Invoke(nameof(IsShooting), shootCoolDown);
+		
 		GameObject obj = Instantiate(muzzleFlash, muzzleFlash.transform.position, Quaternion.identity);
 		smokeTrail.GetComponent<TrailRenderer>().colorGradient.alphaKeys[0].alpha = 1f;
 		obj.GetComponent<ParticleSystem>().Play();

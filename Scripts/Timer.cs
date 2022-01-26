@@ -3,25 +3,21 @@ using UnityEngine;
 
 public class Timer : MonoBehaviour
 {
-	private TextMeshProUGUI timerLabel;
+	public TextMeshProUGUI timerLabel;
 
-	public static float time;
-
-	public static float bestTime;
+	private static float _time;
 
 	private void OnEnable()
 	{
-		time = 0f;
-		timerLabel = base.gameObject.GetComponent<TextMeshProUGUI>();
+		_time = 0f;
 	}
 
 	private void Update()
 	{
-		time += Time.deltaTime;
-		bestTime = time;
-		float num = time / 60f;
-		float num2 = time % 60f;
-		float num3 = time * 100f % 10f;
+		_time += Time.deltaTime;
+		float num = _time / 60f;
+		float num2 = _time % 60f;
+		float num3 = _time * 100f % 10f;
 		timerLabel.text = $"{num:00} : {num2:00} : {num3:00}";
 	}
 }

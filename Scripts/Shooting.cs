@@ -81,8 +81,6 @@ public class Shooting : MonoBehaviour
 
 	public GameObject projectile;
 
-	public GameObject smokeTrail;
-
 	public GameObject muzzleFlash;
 
 	public Transform shootPoint;
@@ -98,102 +96,107 @@ public class Shooting : MonoBehaviour
 
 	[Header("Private Variables")]
 	private Vector3 currentRotation;
-
 	private Vector3 targetRotation;
-
 	private float nextTimeToFire = 1f;
-
-	private float alpha;
-
-	private void Start()
-	{
-		if (currentMagazineAmmo == -1)
-		{
-			currentMagazineAmmo = maxMagazineAmmo;
-		}
-	}
-
+	
 	private void Update()
 	{
-		alpha -= Time.deltaTime * 1f;
-		if (isShooting)
-		{
-			alpha = 1f;
-		}
-		smokeTrail.GetComponent<TrailRenderer>().startColor = new Color(1f, 1f, 1f, alpha);
+		//Ammo God Mode
 		if (godMode)
 		{
-			maxMagazineAmmo = int.MaxValue;
-			currentMagazineAmmo = int.MaxValue;
-			currentAmmo = int.MaxValue;
+			currentMagazineAmmo = maxMagazineAmmo;
+			currentAmmo = maxMagazineAmmo;
 		}
+
 		WeaponInput();
-		StartCoroutine(IsShooting());
+		
+		//Setting Gun Components IsReloading
 		gun.isReloading = isReloading;
-		PlayerInput.Instance.currentRotation = currentRotation;
-		targetRotation = Vector3.Lerp(targetRotation, Vector3.zero, returnSpeed * Time.deltaTime);
+		
+		//Weapon Camera Recoil
 		currentRotation = Vector3.Slerp(currentRotation, targetRotation, snappiness * Time.fixedDeltaTime);
+		targetRotation = Vector3.Lerp(targetRotation, Vector3.zero, returnSpeed * Time.deltaTime);
+		PlayerInput.Instance.currentRotation = currentRotation;
+		
+		//Weapon UI Indicators
 		if (magazineAmmoCounter != null)
 		{
-			magazineAmmoCounter.SetActive(value: true);
+			magazineAmmoCounter.SetActive(true);
 			magazineAmmoCounter.GetComponent<TextMeshProUGUI>().SetText(currentMagazineAmmo.ToString());
 		}
+		
 		else if (currentAmmoCounter != null)
 		{
-			currentAmmoCounter.SetActive(value: true);
+			currentAmmoCounter.SetActive(true);
 			currentAmmoCounter.GetComponent<TextMeshProUGUI>().SetText(maxMagazineAmmo.ToString());
 		}
+		
 		else if (gunAmmoCounter != null)
 		{
-			gunAmmoCounter.SetActive(value: true);
+			gunAmmoCounter.SetActive(true);
 			gunAmmoCounter.GetComponent<TextMeshPro>().SetText(currentMagazineAmmo.ToString());
 		}
 	}
 
 	private void WeaponInput()
 	{
-		if (currentMagazineAmmo > maxMagazineAmmo)
+		//Weapon Limitations And CanShoot State
+		if (currentMagazineAmmo > maxMagazineAmmo) 
 		{
 			currentMagazineAmmo = maxMagazineAmmo;
 		}
-		if (currentMagazineAmmo <= 0)
+		
+		if (currentMagazineAmmo <= maxMagazineAmmo && currentMagazineAmmo > 0)
 		{
-			canShoot = false;
-		}
-
-		if (Input.GetKeyDown(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && fireMode == FireMode.SemiAutomatic &&
-		    currentMagazineAmmo <= maxMagazineAmmo)
-		{
-			nextTimeToFire = Time.time + 1f / fireRate;
-			Shoot();
-
-		}
-
-		if (Input.GetKey(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && fireMode == FireMode.FullAutomatic && currentMagazineAmmo <= maxMagazineAmmo)
-		{
-			nextTimeToFire = Time.time + 1f / fireRate;
-			Shoot();
+			canShoot = true;
 		}
 		
-		if (Input.GetKeyDown(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && fireMode == FireMode.BurstFire && currentMagazineAmmo <= maxMagazineAmmo)
-		{
-			Shoot();
-			if (canShoot)
-			{
-				nextTimeToFire = Time.time + 1f / fireRate;
-				currentBurstAmount += 1f;
-			}
-			if (currentBurstAmount >= burstAmount)
-			{
-				StartCoroutine(BurstWait());
-				currentBurstAmount = 0f;
-			}
-		}
-		if (isReloading)
+		if (currentMagazineAmmo <= 0) 
 		{
 			canShoot = false;
+			currentMagazineAmmo = 0;
 		}
-		else if (currentMagazineAmmo <= 0 || PlayerInput.Instance.reloadInput)
+
+		//Different Firing Modes
+		if (fireMode == FireMode.SemiAutomatic)
+		{
+			if (Input.GetKeyDown(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && currentMagazineAmmo <= maxMagazineAmmo)
+			{
+				nextTimeToFire = Time.time + 1f / fireRate;
+				Shoot();
+
+			}
+		}
+
+		if (fireMode == FireMode.FullAutomatic)
+		{
+			if (Input.GetKey(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && currentMagazineAmmo <= maxMagazineAmmo)
+			{
+				nextTimeToFire = Time.time + 1f / fireRate;
+				Shoot();
+			}
+		}
+		
+		if (fireMode == FireMode.BurstFire)
+		{
+			if (Input.GetKeyDown(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && currentMagazineAmmo <= maxMagazineAmmo)
+			{
+				Shoot();
+				if (canShoot)
+				{
+					nextTimeToFire = Time.time + 1f / fireRate;
+					currentBurstAmount += 1f;
+				}
+
+				if (currentBurstAmount >= burstAmount)
+				{
+					Invoke(nameof(BurstDelay), burstDelay);
+					currentBurstAmount = 0f;
+				}
+			}
+		}
+		
+		else if (PlayerInput.Instance.reloadInput) //Reload If Input Got Pressed
 		{
 			StartCoroutine(Reload());
 		}
@@ -201,6 +204,7 @@ public class Shooting : MonoBehaviour
 
 	private void RecoilFire()
 	{
+		//Camera Recoil Adding
 		targetRotation += new Vector3(recoilX, Random.Range(0f - recoilY, recoilY), Random.Range(0f - recoilZ, recoilZ));
 	}
 
@@ -211,63 +215,94 @@ public class Shooting : MonoBehaviour
 			return;
 		}
 		
+		//Shooting For Each Bullet
 		for (int i = 0; i < bulletsShot; i++)
 		{
+			//Instantiating The Bullet
 			GameObject bullet = Instantiate(projectile, shootPoint.gameObject.transform.position, Quaternion.identity);
-			
+
+			//Setting The Bullet Spread
 			float xSpread = Random.Range(bulletsSpread, -bulletsSpread);
 			float ySpread = Random.Range(-bulletsSpread, bulletsSpread);
 			float zSpread = Random.Range(bulletsSpread, -bulletsSpread);
 			
+			//Bullet Damage With Random Value
 			if (bullet.GetComponent<Bullet>() != null)
 			{
 				bullet.GetComponent<Bullet>().damage = (int)Random.Range(minDamage, maxDamage);
 			}
 			
+			//Rotating The Bullet By The Spread
 			bullet.transform.forward = shootPoint.forward + new Vector3(xSpread, ySpread, zSpread);
 			
+			//Adding Force To The Bullet By The Shoot Force
 			bullet.GetComponent<Rigidbody>().AddForce(shootForce * bullet.transform.forward, ForceMode.VelocityChange);
+			
+			//Adding Range To The Bullets
 			Destroy(bullet, range);
 		}
+
+		//Is Shooting Bool With CoolDown
+		isShooting = true;
 		
+		Invoke(nameof(IsShooting), shootCoolDown);
+		
+		//Making The Magazine Ammo Less
 		currentMagazineAmmo--;
 		
+		//Shooting Sound
 		shootSound.Play();
 		
-		GameObject obj = Instantiate(muzzleFlash, muzzleFlash.transform.position, Quaternion.identity);
+		//Muzzle Flash Instantiation
+		GameObject muzzleFlashFx = Instantiate(muzzleFlash, muzzleFlash.transform.position, Quaternion.identity);
+
+		muzzleFlashFx.GetComponent<ParticleSystem>().Play();
 		
-		smokeTrail.GetComponent<TrailRenderer>().colorGradient.alphaKeys[0].alpha = 1f;
-		
-		obj.GetComponent<ParticleSystem>().Play();
-		
-		PlayerMovement.Instance.GetRb().AddForce(-this.gameObject.transform.forward * rbRecoil, ForceMode.Impulse);
+		//Player KickBack With Shooting
+		PlayerMovement.Instance.GetRb().AddForce(-gameObject.transform.forward * rbRecoil, ForceMode.Impulse);
 		
 		RecoilFire();
 		
+		//Weapon Recoil Motion
 		if (gun != null)
 		{
 			gun.Shoot();
 		}
 		
-		Destroy(obj, 2f);
+		//Destroying The Muzzle Flash
+		Destroy(muzzleFlashFx, 2f);
 	}
 
 	private IEnumerator Reload()
 	{
-		if (currentMagazineAmmo < maxMagazineAmmo && currentAmmo > 0)
+		if (currentMagazineAmmo <= maxMagazineAmmo && currentAmmo > 0)
 		{
+			//Weapon Current State By Reload Being Started
 			isReloading = true;
+			
 			canShoot = false;
+			
+			//Weapon Reload Motion
 			gun.Reload(reloadTime, spinAmount);
+			
+			//Reload Sound
 			reloadSound.Play();
+			
+			
 			yield return new WaitForSeconds(reloadTime);
+			
+			//Weapon Current State By Reload Being Finished
 			isReloading = false;
+			
 			canShoot = true;
+			
+			//Making The Current Ammo Less And Calculating The Amount
 			if (currentAmmo > maxMagazineAmmo)
 			{
 				currentAmmo -= maxMagazineAmmo - currentMagazineAmmo;
 				currentMagazineAmmo = maxMagazineAmmo;
 			}
+			
 			else if (currentAmmo <= maxMagazineAmmo && currentAmmo > 0)
 			{
 				currentMagazineAmmo = currentAmmo;
@@ -276,23 +311,13 @@ public class Shooting : MonoBehaviour
 		}
 	}
 
-	private IEnumerator BurstWait()
+	private void BurstDelay()
 	{
-		canShoot = false;
-		yield return new WaitForSeconds(burstDelay);
 		canShoot = true;
 	}
 
-	private IEnumerator IsShooting()
+	private void IsShooting()
 	{
-		if (Input.GetButtonDown("Fire2") && canShoot)
-		{
-			isShooting = true;
-		}
-		if (Input.GetButtonUp("Fire2"))
-		{
-			yield return new WaitForSeconds(shootCoolDown);
-			isShooting = false;
-		}
+		isShooting = false;
 	}
 }

@@ -220,14 +220,15 @@ public class PlayerMovement : MonoBehaviour
 	private void ControlDrag()
 	{
 		//Setting The Rigidbody Drag
-		if (isSliding)
-		{
-			rb.drag = slideDrag;
-		}
+
 		
 		if (isGrounded)
 		{
-			rb.drag = groundDrag;;
+			if (isSliding)
+				rb.AddForce(new Vector3(-velocity.x, 0, -velocity.z) * slideDrag);
+
+			if (!isSliding)
+				rb.AddForce(new Vector3(-velocity.x, 0, -velocity.z) * groundDrag);
 		}
 
 		else
@@ -241,6 +242,7 @@ public class PlayerMovement : MonoBehaviour
 		UpdateCollisionChecks();
 		CheckInput();
 		FootSteps();
+		
 		if (isGrounded)
 		{
 			Invoke(nameof(JumpCooldown), jumpCoolDown);

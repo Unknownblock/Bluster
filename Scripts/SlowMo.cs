@@ -13,11 +13,11 @@ public class SlowMo : MonoBehaviour
 
 	private void Update()
 	{
-		if (Input.GetButtonDown("Interact"))
+		if (Input.GetKeyDown(InputManager.Instance.interact))
 		{
 			Time.timeScale = slowMotionAmount;
 		}
-		if (Input.GetButtonUp("Interact"))
+		if (Input.GetKeyUp(InputManager.Instance.interact))
 		{
 			Time.timeScale = startTime;
 		}

@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class Gun : MonoBehaviour
 {
+	public enum ReloadDirection
+	{
+		None,
+		Forward,
+		Backward
+	}
+	
 	[Header("Gun Main")]
 	public float gunGetBackSmooth = 25f;
 

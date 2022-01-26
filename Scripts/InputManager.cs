@@ -11,6 +11,7 @@ public class InputManager : MonoBehaviour
     public KeyCode crouchKey = KeyCode.C;
     public KeyCode sprintKey = KeyCode.LeftShift;
     public KeyCode jumpKey = KeyCode.Space;
+    public KeyCode interact = KeyCode.E;
 
     public static InputManager Instance { get; set; }
 

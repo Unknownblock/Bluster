@@ -10,11 +10,13 @@ public class PrefabManager : MonoBehaviour
 
 	private void Awake()
 	{
+		//Setting This To a Singleton
 		Instance = this;
 	}
 
 	public void DisplayDamagePopUp(int amount, Transform popUpParent)
 	{
-		Object.Instantiate(damagePopUp, popUpParent.transform.position, Quaternion.identity).GetComponent<DamagePopUp>().SetUp(amount);
+		//Damage Pop Up Instantiating
+		Instantiate(damagePopUp, popUpParent.transform.position, Quaternion.identity).GetComponent<DamagePopUp>().SetUp(amount);
 	}
 }

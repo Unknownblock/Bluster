@@ -7,15 +7,17 @@ public class Target : MonoBehaviour
 
 	public void TakeDamage(int damage)
 	{
+		//Taking Damage
 		health -= damage;
 		if (health <= 0f)
 		{
-			Die();
+			Destroy();
 		}
 	}
 
-	private void Die()
+	private void Destroy()
 	{
-		Object.Destroy(base.gameObject);
+		//Destroying The Object
+		Destroy(gameObject);
 	}
 }

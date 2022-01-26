@@ -80,6 +80,6 @@ public class EnemyBullet : MonoBehaviour
 			Destroy(spawnedBulletHole, 5f); //Destroy The Bullet Hole Effect
 		}
 		
-		Destroy(gameObject, 0.5f); //Destroying The Projectile / Bullet
+		Destroy(gameObject); //Destroying The Projectile / Bullet
 	}
 }

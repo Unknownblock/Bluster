@@ -16,6 +16,8 @@ public class Turret : MonoBehaviour
 
 	public float radius;
 
+	public Collider[] results;
+
 	public LayerMask targetMask;
 
 	private Vector3 lastKnownPosition = Vector3.zero;
@@ -79,7 +81,7 @@ public class Turret : MonoBehaviour
 		if (detectionMode == DetectionMode.AreaDetection)
 		{
 			//Getting The Object And Colliders In The Radius
-			Collider[] results = Physics.OverlapSphere(gameObject.transform.position, radius, targetMask);
+			results = Physics.OverlapSphere(gameObject.transform.position, radius, targetMask);
 			
 			foreach (Collider everyResult in results) //Selecting The Object To Look And Shoot At
 			{
@@ -121,6 +123,7 @@ public class Turret : MonoBehaviour
 		if (Time.time >= nextTimeToFire && Physics.Raycast(shootPoint.transform.position, shootPoint.forward, out var hitInfo, radius) && hitInfo.transform.gameObject == currentTarget)
 		{
 			nextTimeToFire = Time.time + 1f / fireRate;
+			print("Shot");
 			Shoot();
 		}
 	}

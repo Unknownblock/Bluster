@@ -32,21 +32,20 @@ public class MultipleObjectSpawner : MonoBehaviour
 		//List Of Spawned Object
 		GameObject[] array = spawnedObject.ToArray();
 		
-		foreach (GameObject everyObject in array)
+		for (int i = 0; i < array.Length; i++)
 		{
-			//Removing The Array Part If Null
-			if (everyObject == null)
+			if (array[i] == null)
 			{
-				spawnedObject.Remove(gameObject);
+				spawnedObject.Remove(array[i]);
 			}
 			
 			//Setting Every Array Object Active If Not Null
-			if (everyObject != null)
+			if (array[i] != null)
 			{
-				everyObject.SetActive(true);
+				array[i].SetActive(true);
 			}
 		}
-		
+
 		//Spawning If No Array Part Exists
 		if (array.Length == 0)
 		{

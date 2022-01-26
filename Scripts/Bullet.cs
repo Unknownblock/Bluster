@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
@@ -9,6 +10,12 @@ public class Bullet : MonoBehaviour
 	[Header("Amount Variables")]
 	public int damage;
 	public float force = 700f;
+	public float speed;
+
+	private void Update()
+	{
+		gameObject.GetComponent<Rigidbody>().AddForce(transform.forward * Time.deltaTime * speed);
+	}
 
 	private void OnCollisionEnter(Collision other)
 	{
@@ -31,12 +38,12 @@ public class Bullet : MonoBehaviour
 		if (otherRb != null) //If Hit a Rigidbody
 		{
 			otherRb.velocity = Vector3.zero; //If Hit Reset The Velocity
-			otherRb.AddForce(force * -other.contacts[0].normal); //Add The Custom Force To The Rigidbody
+			otherRb.AddForceAtPosition(force * transform.forward, gameObject.transform.position); //Add The Custom Force To The Rigidbody
 		}
 		
 		else
 		{
-			GameObject hitBulletHole = Instantiate(bulletHole, other.contacts[0].point * 1.0025f, Quaternion.LookRotation(-other.contacts[0].normal)); //Instantiate The Bullet Hole
+			GameObject hitBulletHole = Instantiate(bulletHole, other.contacts[0].point * 1.25f, Quaternion.LookRotation(-other.contacts[0].normal)); //Instantiate The Bullet Hole
 			Destroy(hitBulletHole, 5f); //Destroy The Instantiated Bullet Hole
 		}
 

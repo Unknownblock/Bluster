@@ -234,10 +234,7 @@ public class Shooting : MonoBehaviour
 			
 			//Rotating The Bullet By The Spread
 			bullet.transform.forward = shootPoint.forward + new Vector3(xSpread, ySpread, zSpread);
-			
-			//Adding Force To The Bullet By The Shoot Force
-			bullet.GetComponent<Rigidbody>().AddForce(shootForce * bullet.transform.forward, ForceMode.VelocityChange);
-			
+
 			//Adding Range To The Bullets
 			Destroy(bullet, range);
 		}

@@ -1,5 +1,17 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
+
+[Serializable]
+public class CrossHairPart
+{
+	public Transform transform;
+	
+	public enum PartType
+	{ Dot, NormalPart, InvertedSizePart }
+	
+	public PartType type;
+}
 
 public class CrossHair : MonoBehaviour
 {
@@ -13,11 +25,7 @@ public class CrossHair : MonoBehaviour
 	public float dotSize;
 
 	public bool enableDot;
-
-	[Header("HitMaker Size Settings")] public float hitMarkerLength;
-	public float hitMarkerThickness;
 	
-
 	[Header("CrossHair Color")]
 	[Range(0f, 255f)]
 	public byte red;
@@ -30,16 +38,19 @@ public class CrossHair : MonoBehaviour
 
 	[Range(0f, 255f)]
 	public byte alpha;
+	
+	[Header("Outline Size Settings")]
+	public float outlineAmount;
 
 	[Header("Assignable")]
-	public GameObject[] differentParts;
+	public CrossHairPart[] differentParts;
+	public CrossHairPart[] outlineParts;
 
-	public GameObject middleDot;
-	
 	public void Update()
 	{
 		SizeSettings();
 		ColorSettings();
+		OutlineSizeSettings();
 	}
 
 	private void SizeSettings()
@@ -48,18 +59,59 @@ public class CrossHair : MonoBehaviour
 
 		foreach (var everyObject in differentParts)
 		{
-			GetRectTransform(everyObject.transform).sizeDelta = new Vector2(thickness, length); //Setting The Length And Thickness Of All The CrossHair Parts
+			if (everyObject.type == CrossHairPart.PartType.NormalPart)
+				GetRectTransform(everyObject.transform).sizeDelta = new Vector2(thickness, length); //Setting The Length And Thickness Of All The CrossHair Parts
+			
+			if (everyObject.type == CrossHairPart.PartType.InvertedSizePart)
+				GetRectTransform(everyObject.transform).sizeDelta = new Vector2(length, thickness); //Setting The Length And Thickness Of All The CrossHair Parts
+
+			if (everyObject.type == CrossHairPart.PartType.Dot)
+			{
+				GetRectTransform(everyObject.transform).sizeDelta = new Vector2(dotSize, dotSize); //Setting The Middle Dots Size
+
+				if (enableDot)
+				{
+					everyObject.transform.gameObject.SetActive(true); //Turning The Dot On
+				}
+
+				else if (!enableDot)
+				{
+					everyObject.transform.gameObject.SetActive(false); //Turning The Dot Off
+				}
+			}
 		}
-		
-		GetRectTransform(middleDot.transform).sizeDelta = new Vector2(dotSize, dotSize); //Setting The Middle Dots Size
-		
-		if (enableDot)
+	}
+
+	private void OutlineSizeSettings()
+	{
+		GetRectTransform(transform).sizeDelta = new Vector2(gap, gap); //Setting The Gap
+
+		foreach (var everyObject in outlineParts)
 		{
-			middleDot.SetActive(true); //Turning The Dot On
-		}
-		else if (!enableDot)
-		{
-			middleDot.SetActive(false); //Turning The Dot Off
+			var outlineLength = length + outlineAmount;
+			var outlineThickness = thickness + outlineAmount;
+			var outlineDotSize = dotSize + outlineAmount;
+
+			if (everyObject.type == CrossHairPart.PartType.NormalPart)
+				GetRectTransform(everyObject.transform).sizeDelta = new Vector2(outlineThickness, outlineLength);
+			
+			if (everyObject.type == CrossHairPart.PartType.InvertedSizePart)
+				GetRectTransform(everyObject.transform).sizeDelta = new Vector2(outlineLength, outlineThickness);
+			
+			if (everyObject.type == CrossHairPart.PartType.Dot)
+			{
+				GetRectTransform(everyObject.transform).sizeDelta = new Vector2(outlineDotSize, outlineDotSize);
+				
+				if (enableDot)
+				{
+					everyObject.transform.gameObject.SetActive(true); //Turning The Dot On
+				}
+
+				else if (!enableDot)
+				{
+					everyObject.transform.gameObject.SetActive(false); //Turning The Dot Off
+				}
+			}
 		}
 	}
 
@@ -69,8 +121,6 @@ public class CrossHair : MonoBehaviour
 		{
 			GetImageComponent(everyObject.transform).color = new Color32(red, green, blue, alpha); //Set The Color Of All The Parts Of The CrossHair
 		}
-
-		GetImageComponent(middleDot.transform).color = new Color32(red, green, blue, alpha); //Set The Color Of The Middle Part
 	}
 
 	private static RectTransform GetRectTransform(Transform rectTransform)

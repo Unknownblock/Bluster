@@ -35,9 +35,13 @@ public class HitMarker : MonoBehaviour
 
     [Range(0f, 255f)]
     public byte alpha;
+    
+    [Header("Outline Size Settings")]
+    public float outlineAmount;
 
     [Header("Assignable")]
-    public GameObject[] differentParts;
+    public CrossHairPart[] differentParts;
+    public CrossHairPart[] outlineParts;
 
     public static HitMarker Instance { get; private set; }
 
@@ -61,6 +65,7 @@ public class HitMarker : MonoBehaviour
         
         SizeSettings();
         ColorSettings();
+        OutlineSizeSettings();
     }
 
     public void FadeIn()
@@ -81,6 +86,23 @@ public class HitMarker : MonoBehaviour
         foreach (var everyObject in differentParts)
         {
             GetRectTransform(everyObject.transform).sizeDelta = new Vector2(thickness, length); //Setting The Length And Thickness Of All The HitMarker Parts
+        }
+    }
+    
+    private void OutlineSizeSettings()
+    {
+        GetRectTransform(transform).sizeDelta = new Vector2(gap, gap); //Setting The Gap
+
+        foreach (var everyObject in outlineParts)
+        {
+            var outlineLength = length + outlineAmount;
+            var outlineThickness = thickness + outlineAmount;
+
+            if (everyObject.type == CrossHairPart.PartType.NormalPart)
+                GetRectTransform(everyObject.transform).sizeDelta = new Vector2(outlineThickness, outlineLength);
+			
+            if (everyObject.type == CrossHairPart.PartType.InvertedSizePart)
+                GetRectTransform(everyObject.transform).sizeDelta = new Vector2(outlineLength, outlineThickness);
         }
     }
 

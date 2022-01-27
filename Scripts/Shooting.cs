@@ -16,6 +16,8 @@ public class Shooting : MonoBehaviour
 
 	public bool canShoot;
 
+	public bool canBurstShoot;
+
 	public bool isShooting;
 
 	public bool isReloading;
@@ -146,12 +148,12 @@ public class Shooting : MonoBehaviour
 			currentMagazineAmmo = maxMagazineAmmo;
 		}
 		
-		if (currentMagazineAmmo <= maxMagazineAmmo && currentMagazineAmmo > 0)
+		if (currentMagazineAmmo <= maxMagazineAmmo && currentMagazineAmmo > 0 || canBurstShoot)
 		{
 			canShoot = true;
 		}
 		
-		if (currentMagazineAmmo <= 0) 
+		if (currentMagazineAmmo <= 0 || !canBurstShoot) 
 		{
 			canShoot = false;
 			currentMagazineAmmo = 0;
@@ -179,9 +181,10 @@ public class Shooting : MonoBehaviour
 		
 		if (fireMode == FireMode.BurstFire)
 		{
-			if (Input.GetKeyDown(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && currentMagazineAmmo <= maxMagazineAmmo)
+			if (Input.GetKey(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && currentMagazineAmmo <= maxMagazineAmmo)
 			{
 				Shoot();
+				
 				if (canShoot)
 				{
 					nextTimeToFire = Time.time + 1f / fireRate;
@@ -190,9 +193,20 @@ public class Shooting : MonoBehaviour
 
 				if (currentBurstAmount >= burstAmount)
 				{
+					canBurstShoot = false;
 					Invoke(nameof(BurstDelay), burstDelay);
 					currentBurstAmount = 0f;
 				}
+			}
+
+			if (canBurstShoot)
+			{
+				canShoot = true;
+			}
+			
+			if (!canBurstShoot)
+			{
+				canShoot = false;
 			}
 		}
 		
@@ -205,7 +219,7 @@ public class Shooting : MonoBehaviour
 	private void RecoilFire()
 	{
 		//Camera Recoil Adding
-		targetRotation += new Vector3(recoilX, Random.Range(0f - recoilY, recoilY), Random.Range(0f - recoilZ, recoilZ));
+		targetRotation += new Vector3(recoilX, Random.Range(-recoilY, recoilY), Random.Range(-recoilZ, recoilZ));
 	}
 
 	private void Shoot()
@@ -316,7 +330,7 @@ public class Shooting : MonoBehaviour
 
 	private void BurstDelay()
 	{
-		canShoot = true;
+		canBurstShoot = true;
 	}
 
 	private void IsShooting()

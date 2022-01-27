@@ -136,9 +136,9 @@ public class Turret : MonoBehaviour
 			GameObject bullet = Instantiate(projectile, shootPoint.gameObject.transform.position, Quaternion.identity);
 			
 			//Setting The Bullet Spread
-			float xSpread = Random.Range(bulletsSpread, 0f - bulletsSpread);
-			float ySpread = Random.Range(0f - bulletsSpread, bulletsSpread);
-			float zSpread = Random.Range(bulletsSpread, 0f - bulletsSpread);
+			float xSpread = Random.Range(bulletsSpread, -bulletsSpread);
+			float ySpread = Random.Range(-bulletsSpread, bulletsSpread);
+			float zSpread = Random.Range(bulletsSpread, -bulletsSpread);
 			
 			//Bullet Damage With Random Value
 			if (bullet.GetComponent<EnemyBullet>() != null)

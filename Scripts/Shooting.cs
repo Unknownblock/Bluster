@@ -226,14 +226,20 @@ public class Shooting : MonoBehaviour
 			float ySpread = Random.Range(-bulletsSpread, bulletsSpread);
 			float zSpread = Random.Range(bulletsSpread, -bulletsSpread);
 			
+			//Rotating The Bullet By The Spread
+			bullet.transform.forward = shootPoint.forward + new Vector3(xSpread, ySpread, zSpread);
+			
+			//Adding Force To The Bullet By The Shoot Force
+			bullet.GetComponent<Rigidbody>().AddForce(shootForce * bullet.transform.forward, ForceMode.VelocityChange);
+			
+			//Adding Range To The Bullets
+			Destroy(bullet, range);
+			
 			//Bullet Damage With Random Value
 			if (bullet.GetComponent<Bullet>() != null)
 			{
 				bullet.GetComponent<Bullet>().damage = (int)Random.Range(minDamage, maxDamage);
 			}
-			
-			//Rotating The Bullet By The Spread
-			bullet.transform.forward = shootPoint.forward + new Vector3(xSpread, ySpread, zSpread);
 
 			//Adding Range To The Bullets
 			Destroy(bullet, range);

@@ -120,10 +120,9 @@ public class Turret : MonoBehaviour
 	private void WeaponInput()
 	{
 		//Shoot When The Target Is In Front Of The Turret
-		if (Time.time >= nextTimeToFire && Physics.Raycast(shootPoint.transform.position, shootPoint.forward, out var hitInfo, radius) && hitInfo.transform.gameObject == currentTarget)
+		if (Time.time >= nextTimeToFire && Physics.Raycast(shootPoint.transform.position, shootPoint.forward, radius, targetMask))
 		{
 			nextTimeToFire = Time.time + 1f / fireRate;
-			print("Shot");
 			Shoot();
 		}
 	}

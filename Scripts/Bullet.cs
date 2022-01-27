@@ -18,12 +18,14 @@ public class Bullet : MonoBehaviour
 		
 		if (target != null) //If Hit a Target
 		{
+			HitMarker.Instance.FadeIn();
 			target.TakeDamage(damage); //Hit Damage
 			PrefabManager.Instance.DisplayDamagePopUp(damage, other.transform); //Damage Pop Up Instantiation
 		}
 		
 		if (explodingTarget != null) //If Hit an Exploding Target
 		{
+			HitMarker.Instance.FadeIn();
 			explodingTarget.TakeDamage(damage); //Hit Damage
 			PrefabManager.Instance.DisplayDamagePopUp(damage, other.transform); //Damage Pop Up Instantiation
 		}
@@ -36,11 +38,11 @@ public class Bullet : MonoBehaviour
 		
 		else
 		{
-			GameObject hitBulletHole = Instantiate(bulletHole, other.contacts[0].point * 1.0025f, Quaternion.LookRotation(-other.contacts[0].normal)); //Instantiate The Bullet Hole
+			GameObject hitBulletHole = Instantiate(bulletHole, new Vector3(other.contacts[0].point.x, (float) (other.contacts[0].point.y * 1.0025), other.contacts[0].point.z), Quaternion.LookRotation(-other.contacts[0].normal)); //Instantiate The Bullet Hole
 			Destroy(hitBulletHole, 5f); //Destroy The Instantiated Bullet Hole
 		}
 
-		GameObject hitImpactEffect = Instantiate(impactEffect, other.contacts[0].point, Quaternion.LookRotation(other.contacts[0].normal)); //Instantiate The Impact Effect
+		GameObject hitImpactEffect = Instantiate(impactEffect, new Vector3(other.contacts[0].point.x, (float) (other.contacts[0].point.y * 1.0025), other.contacts[0].point.z), Quaternion.LookRotation(other.contacts[0].normal)); //Instantiate The Impact Effect
 		Destroy(hitImpactEffect, 1f); //Destroy The Instantiated Impact Effect
 		Destroy(gameObject); //Destroy The Bullet
 	}

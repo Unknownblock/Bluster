@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 613586542352476310}
   - component: {fileID: 5763893736385618985}
   m_Layer: 8
-  m_Name: EnemyProjectile
+  m_Name: Enemy Projectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -110,7 +110,7 @@ Transform:
   m_GameObject: {fileID: 9069847901521953740}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
-  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_Children:
   - {fileID: 9143844373387323438}
   m_Father: {fileID: 0}
@@ -191,10 +191,10 @@ TrailRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Time: 0.25
+  m_Time: 0.15
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.05
+    widthMultiplier: 0.1
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -210,11 +210,11 @@ TrailRenderer:
       - serializedVersion: 3
         time: 1
         value: 0
-        inSlope: -1.2023171
-        outSlope: -1.2023171
+        inSlope: -1.0210048
+        outSlope: -1.0210048
         tangentMode: 0
         weightedMode: 0
-        inWeight: 0.38467377
+        inWeight: 0.18721801
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2

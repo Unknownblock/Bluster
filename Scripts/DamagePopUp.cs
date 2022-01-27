@@ -9,6 +9,8 @@ public class DamagePopUpColor
 
 	public Color32 color;
 
+	public float size;
+
 	public int maxDamage;
 
 	public int minDamage;
@@ -72,11 +74,10 @@ public class DamagePopUp : MonoBehaviour
 	{
 		foreach (DamagePopUpColor popUpColor in damagePopUpColor) //Set All The Pop Up Colors By The Max Amount And Min Amount
 		{
-			if (popUpColor.maxDamage > currentAmount && popUpColor.minDamage < currentAmount)
+			if (popUpColor.maxDamage >= currentAmount && popUpColor.minDamage < currentAmount)
 			{
-				textColor.r = popUpColor.color.r;
-				textColor.g = popUpColor.color.g;
-				textColor.b = popUpColor.color.b;
+				textColor = new Color(popUpColor.color.r, popUpColor.color.g, popUpColor.color.b, popUpColor.color.a);
+				textMesh.fontSize = popUpColor.size;
 			}
 		}
 	}

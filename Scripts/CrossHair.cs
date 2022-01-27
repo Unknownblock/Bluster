@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 public class CrossHair : MonoBehaviour
 {
-	[Header("Size Settings")]
+	[Header("CrossHair Size Settings")]
 	public float length;
 
 	public float thickness;
@@ -14,7 +14,11 @@ public class CrossHair : MonoBehaviour
 
 	public bool enableDot;
 
-	[Header("Color")]
+	[Header("HitMaker Size Settings")] public float hitMarkerLength;
+	public float hitMarkerThickness;
+	
+
+	[Header("CrossHair Color")]
 	[Range(0f, 255f)]
 	public byte red;
 
@@ -31,19 +35,11 @@ public class CrossHair : MonoBehaviour
 	public GameObject[] differentParts;
 
 	public GameObject middleDot;
-
-	private float _startGap;
-
-	private void Start()
-	{
-		_startGap = gap; //Set The Start Size
-	}
-
+	
 	public void Update()
 	{
 		SizeSettings();
 		ColorSettings();
-		gap = _startGap + PlayerMovement.Instance.GetRb().velocity.magnitude; //Changing The CrossHair Gap With Player Speed
 	}
 
 	private void SizeSettings()

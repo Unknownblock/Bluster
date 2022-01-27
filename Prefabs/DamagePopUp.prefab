@@ -126,8 +126,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 4
-  m_fontSizeBase: 4
+  m_fontSize: 3
+  m_fontSizeBase: 3
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -188,24 +188,28 @@ MonoBehaviour:
     color:
       serializedVersion: 2
       rgba: 4294967295
+    size: 3
     maxDamage: 25
     minDamage: 0
   - name: Yellow
     color:
       serializedVersion: 2
       rgba: 4278253567
+    size: 4
     maxDamage: 50
     minDamage: 25
   - name: Orange
     color:
       serializedVersion: 2
-      rgba: 4278230015
+      rgba: 4278221311
+    size: 5
     maxDamage: 75
     minDamage: 50
   - name: Red
     color:
       serializedVersion: 2
       rgba: 4278190335
+    size: 6
     maxDamage: 100
     minDamage: 75
   textColor:

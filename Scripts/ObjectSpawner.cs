@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class ObjectSpawner : MonoBehaviour
 {
-	public GameObject rocketObject;
+	public GameObject objectToBeSpawned;
 
-	public GameObject currentRocket;
+	public GameObject currentObject;
 
 	public int timeTilNextSpawn = 5;
 
@@ -17,7 +17,7 @@ public class ObjectSpawner : MonoBehaviour
 
 	private void Update()
 	{
-		if (currentRocket == null)
+		if (currentObject == null)
 		{
 			timer += Time.deltaTime; //Adding The Time
 			Spawn();
@@ -29,7 +29,7 @@ public class ObjectSpawner : MonoBehaviour
 		if (timer >= timeTilNextSpawn) //If The Time Passed The Wanted Time
 		{
 			//Spawn
-			currentRocket = Instantiate(rocketObject, transform.position, gameObject.transform.rotation);
+			currentObject = Instantiate(objectToBeSpawned, transform.position, gameObject.transform.rotation);
 			
 			timer = 0f; //Setting The Timer To Zero
 		}

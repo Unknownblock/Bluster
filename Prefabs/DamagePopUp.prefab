@@ -188,36 +188,36 @@ MonoBehaviour:
     color:
       serializedVersion: 2
       rgba: 4294967295
-    size: 1
+    size: 2
     maxDamage: 25
     minDamage: 0
   - name: Yellow
     color:
       serializedVersion: 2
       rgba: 4278253567
-    size: 0.28
+    size: 2
     maxDamage: 50
     minDamage: 25
   - name: Orange
     color:
       serializedVersion: 2
       rgba: 4278221311
-    size: 5
+    size: 3
     maxDamage: 75
     minDamage: 50
   - name: Red
     color:
       serializedVersion: 2
       rgba: 4278190335
-    size: 1
+    size: 4
     maxDamage: 100
     minDamage: 75
   textColor:
     serializedVersion: 2
     rgba: 4294967295
-  disAppearTime: 2
-  fadeOutSpeed: 500
-  moveYSpeed: 1
+  disAppearTime: 1
+  fadeOutSpeed: 2500
+  moveYSpeed: 2
   alpha: 255
   currentAmount: 0
   textMesh: {fileID: 2175428398379027112}

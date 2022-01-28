@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
@@ -8,7 +9,7 @@ public class Bullet : MonoBehaviour
 
 	[Header("Amount Variables")]
 	public int damage;
-	public float force = 700f;
+	public float force = 750f;
 
 	private void OnCollisionEnter(Collision other)
 	{

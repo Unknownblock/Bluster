@@ -2,22 +2,20 @@ using TMPro;
 using UnityEngine;
 using System;
 
-[Serializable]
-public class DamagePopUpColor
-{
-	public string name;
-
-	public Color32 color;
-
-	public float size;
-
-	public int maxDamage;
-
-	public int minDamage;
-}
-
 public class DamagePopUp : MonoBehaviour
 {
+	[Serializable]
+	public class DamagePopUpColor
+	{
+		public Color32 color;
+
+		public float size;
+
+		public int maxDamage;
+
+		public int minDamage;
+	}
+	
 	public DamagePopUpColor[] damagePopUpColor;
 
 	public Color32 textColor;

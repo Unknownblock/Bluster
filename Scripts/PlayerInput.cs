@@ -25,8 +25,9 @@ public class PlayerInput : MonoBehaviour
 
 	public Vector3 cameraRot;
 
-	public Vector3 currentRotation;
-
+	[Header("Recoil")] public float snappiness;
+	public float returnSpeed;
+	
 	[Header("Tilt")]
 	public float tilt;
 
@@ -35,11 +36,11 @@ public class PlayerInput : MonoBehaviour
 	public float tiltSmoothTime;
 
 	[Header("Others")]
-	public Vector3 moveDirection;
-
 	public float horizontalMovement;
-
 	public float verticalMovement;
+	public Vector3 currentRotation;
+	public Vector3 targetRotation;
+	public Vector3 moveDirection;
 
 	public static PlayerInput Instance { get; private set; }
 
@@ -63,6 +64,10 @@ public class PlayerInput : MonoBehaviour
 		Tilt();
 		Look();
 		MyInput();
+		
+		//Weapon Camera Recoil
+		currentRotation = Vector3.Slerp(currentRotation, targetRotation, snappiness * Time.fixedDeltaTime);
+		targetRotation = Vector3.Lerp(targetRotation, Vector3.zero, returnSpeed * Time.deltaTime);
 	}
 
 	private void Tilt()
@@ -138,5 +143,11 @@ public class PlayerInput : MonoBehaviour
 		
 		//Setting Orientations Rotation
 		PlayerMovement.Instance.orientation.transform.rotation = Quaternion.Euler(0f, yRotation, 0f);
+	}
+	
+	public void RecoilFire(float recoilX, float recoilY, float recoilZ)
+	{
+		//Camera Recoil Adding
+		targetRotation += new Vector3(recoilX, Random.Range(-recoilY, recoilY), Random.Range(-recoilZ, recoilZ));
 	}
 }

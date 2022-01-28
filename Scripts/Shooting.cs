@@ -54,10 +54,6 @@ public class Shooting : MonoBehaviour
 	[Range(-20f, 20f)]
 	public float recoilZ;
 
-	public float snappiness;
-
-	public float returnSpeed;
-
 	[Header("Reload Settings")]
 	public int spinAmount;
 
@@ -97,8 +93,6 @@ public class Shooting : MonoBehaviour
 	public GameObject currentAmmoCounter;
 
 	[Header("Private Variables")]
-	private Vector3 currentRotation;
-	private Vector3 targetRotation;
 	private float nextTimeToFire = 1f;
 	
 	private void Update()
@@ -114,12 +108,7 @@ public class Shooting : MonoBehaviour
 		
 		//Setting Gun Components IsReloading
 		gun.isReloading = isReloading;
-		
-		//Weapon Camera Recoil
-		currentRotation = Vector3.Slerp(currentRotation, targetRotation, snappiness * Time.fixedDeltaTime);
-		targetRotation = Vector3.Lerp(targetRotation, Vector3.zero, returnSpeed * Time.deltaTime);
-		PlayerInput.Instance.currentRotation = currentRotation;
-		
+
 		//Weapon UI Indicators
 		if (magazineAmmoCounter != null)
 		{
@@ -148,12 +137,12 @@ public class Shooting : MonoBehaviour
 			currentMagazineAmmo = maxMagazineAmmo;
 		}
 		
-		if (currentMagazineAmmo <= maxMagazineAmmo && currentMagazineAmmo > 0 || canBurstShoot)
+		if (currentMagazineAmmo <= maxMagazineAmmo && currentMagazineAmmo > 0)
 		{
 			canShoot = true;
 		}
 		
-		if (currentMagazineAmmo <= 0 || !canBurstShoot) 
+		if (currentMagazineAmmo <= 0) 
 		{
 			canShoot = false;
 			currentMagazineAmmo = 0;
@@ -181,6 +170,16 @@ public class Shooting : MonoBehaviour
 		
 		if (fireMode == FireMode.BurstFire)
 		{
+			if (canBurstShoot)
+			{
+				canShoot = true;
+			}
+			
+			if (!canBurstShoot)
+			{
+				canShoot = false;
+			}
+			
 			if (Input.GetKey(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && currentMagazineAmmo <= maxMagazineAmmo)
 			{
 				Shoot();
@@ -198,28 +197,12 @@ public class Shooting : MonoBehaviour
 					currentBurstAmount = 0f;
 				}
 			}
-
-			if (canBurstShoot)
-			{
-				canShoot = true;
-			}
-			
-			if (!canBurstShoot)
-			{
-				canShoot = false;
-			}
 		}
 		
 		else if (PlayerInput.Instance.reloadInput) //Reload If Input Got Pressed
 		{
 			StartCoroutine(Reload());
 		}
-	}
-
-	private void RecoilFire()
-	{
-		//Camera Recoil Adding
-		targetRotation += new Vector3(recoilX, Random.Range(-recoilY, recoilY), Random.Range(-recoilZ, recoilZ));
 	}
 
 	private void Shoot()
@@ -277,8 +260,8 @@ public class Shooting : MonoBehaviour
 		
 		//Player KickBack With Shooting
 		PlayerMovement.Instance.GetRb().AddForce(-gameObject.transform.forward * rbRecoil, ForceMode.Impulse);
-		
-		RecoilFire();
+
+		PlayerInput.Instance.RecoilFire(recoilX, recoilY, recoilZ);
 		
 		//Weapon Recoil Motion
 		if (gun != null)

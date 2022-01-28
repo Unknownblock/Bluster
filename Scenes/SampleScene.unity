@@ -1909,7 +1909,7 @@ MonoBehaviour:
   canBurstShoot: 0
   isShooting: 0
   isReloading: 0
-  fireMode: 2
+  fireMode: 1
   fireRate: 10
   currentMagazineAmmo: 30
   currentAmmo: 30

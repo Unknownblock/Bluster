@@ -3988,8 +3988,8 @@ ParticleSystem:
     ratio: 1
     lifetime:
       serializedVersion: 2
-      minMaxState: 2
-      scalar: 0.47499293
+      minMaxState: 0
+      scalar: 0.2
       minScalar: 1
       maxCurve:
         serializedVersion: 2

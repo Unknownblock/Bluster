@@ -14,6 +14,8 @@ public class Shooting : MonoBehaviour
 	[Header("Bool Variables")]
 	public bool godMode;
 
+	public bool haveAmmo;
+	
 	public bool canShoot;
 
 	public bool canBurstShoot;
@@ -41,7 +43,6 @@ public class Shooting : MonoBehaviour
 
 	[Header("CoolDown")]
 	public float shootCoolDown;
-
 	public float burstDelay;
 
 	[Header("Recoil Settings")]
@@ -92,9 +93,6 @@ public class Shooting : MonoBehaviour
 
 	public GameObject currentAmmoCounter;
 
-	[Header("Private Variables")]
-	private float nextTimeToFire = 1f;
-	
 	private void Update()
 	{
 		//Ammo God Mode
@@ -139,31 +137,28 @@ public class Shooting : MonoBehaviour
 		
 		if (currentMagazineAmmo <= maxMagazineAmmo && currentMagazineAmmo > 0)
 		{
-			canShoot = true;
+			haveAmmo = true;
 		}
 		
 		if (currentMagazineAmmo <= 0) 
 		{
-			canShoot = false;
+			haveAmmo = false;
 			currentMagazineAmmo = 0;
 		}
 
 		//Different Firing Modes
 		if (fireMode == FireMode.SemiAutomatic)
 		{
-			if (Input.GetKeyDown(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && currentMagazineAmmo <= maxMagazineAmmo)
+			if (Input.GetKeyDown(InputManager.Instance.shootKey))
 			{
-				nextTimeToFire = Time.time + 1f / fireRate;
 				Shoot();
-
 			}
 		}
 
 		if (fireMode == FireMode.FullAutomatic)
 		{
-			if (Input.GetKey(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && currentMagazineAmmo <= maxMagazineAmmo)
+			if (Input.GetKey(InputManager.Instance.shootKey))
 			{
-				nextTimeToFire = Time.time + 1f / fireRate;
 				Shoot();
 			}
 		}
@@ -180,13 +175,12 @@ public class Shooting : MonoBehaviour
 				canShoot = false;
 			}
 			
-			if (Input.GetKey(InputManager.Instance.shootKey) && Time.time >= nextTimeToFire && currentMagazineAmmo <= maxMagazineAmmo)
+			if (Input.GetKey(InputManager.Instance.shootKey))
 			{
 				Shoot();
 				
 				if (canShoot)
 				{
-					nextTimeToFire = Time.time + 1f / fireRate;
 					currentBurstAmount += 1f;
 				}
 
@@ -207,7 +201,7 @@ public class Shooting : MonoBehaviour
 
 	private void Shoot()
 	{
-		if (!canShoot)
+		if (!canShoot || !haveAmmo)
 		{
 			return;
 		}
@@ -246,6 +240,7 @@ public class Shooting : MonoBehaviour
 		isShooting = true;
 		
 		Invoke(nameof(IsShooting), shootCoolDown);
+		FireRate();
 		
 		//Making The Magazine Ammo Less
 		currentMagazineAmmo--;
@@ -314,6 +309,17 @@ public class Shooting : MonoBehaviour
 	private void BurstDelay()
 	{
 		canBurstShoot = true;
+	}
+
+	private void FireRate()
+	{
+		canShoot = false;
+		Invoke(nameof(ShootDelay), 1f / fireRate);
+	}
+
+	private void ShootDelay()
+	{
+		canShoot = true;
 	}
 
 	private void IsShooting()

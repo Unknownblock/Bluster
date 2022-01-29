@@ -45,7 +45,7 @@ public class CrossHair : MonoBehaviour
 	[Header("Assignable")]
 	public CrossHairPart[] differentParts;
 	public CrossHairPart[] outlineParts;
-
+	
 	public void Update()
 	{
 		SizeSettings();

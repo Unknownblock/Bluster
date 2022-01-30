@@ -66,7 +66,7 @@ public class WeaponContainer : MonoBehaviour
 
                 if (Input.GetKeyDown(InputManager.Instance.dropWeaponKey) && everyWeapon.canDrop)
                 {
-                    DropWeapon(everyWeapon);
+                    DropWeapon(everyWeapon, everyWeapon.name);
                 }
             }
             
@@ -126,10 +126,18 @@ public class WeaponContainer : MonoBehaviour
         }
     }
 
-    public void DropWeapon(Weapon weapon)
+    public void DropWeapon(Weapon weapon, string wantedName)
     {
         GameObject droppedWeapon = Instantiate(weapon.dropWeaponPrefab, weapon.weaponPrefab.transform.position, weapon.weaponPrefab.transform.rotation);
         droppedWeapon.GetComponent<Rigidbody>().AddForce(MoveCamera.Instance.transform.forward * throwForce);
+        
+        if (droppedWeapon == null)
+        {
+            droppedWeapon.AddComponent<PickUpWeapon>();
+        }
+        
+        droppedWeapon.GetComponent<PickUpWeapon>().weaponName = wantedName;
+        
         weapon.haveTheWeapon = false;
     }
 }

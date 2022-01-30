@@ -69,7 +69,7 @@ public class EnemyBullet : MonoBehaviour
 		else if (hitRigidbody != null && other.gameObject.layer != LayerMask.NameToLayer("Player"))
 		{
 			hitRigidbody.velocity = Vector3.zero; //Setting The Velocity To Zero
-			hitRigidbody.AddForce(force * -other.contacts[0].normal); //Adding Force To The Rigidbody Object
+			hitRigidbody.AddForceAtPosition(force * transform.forward, gameObject.transform.position); //Add The Custom Force To The Rigidbody
 		}
 		
 		else

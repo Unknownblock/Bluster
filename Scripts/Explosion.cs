@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class Explosion : MonoBehaviour
 {
+	public int damageAmount = 100;
 	public float radius;
 	public float force;
 	public float disAppearingTime = 1;
@@ -29,13 +30,13 @@ public class Explosion : MonoBehaviour
 			if (areaExplodingTarget != null && areaExplodingTarget != transform.GetComponent<ExplodingTarget>())
 			{
 				//Damaging The Targets Near The Explosion
-				areaExplodingTarget.TakeDamage((int)(radius - Vector3.Distance(areaExplodingTarget.gameObject.transform.position, transform.position)));
+				areaExplodingTarget.TakeDamage((int)(damageAmount - Vector3.Distance(areaExplodingTarget.gameObject.transform.position, transform.position)));
 			}
 			
 			if (areaTarget != null)
 			{
 				//Damaging The Targets Near The Explosion
-				areaTarget.TakeDamage((int)(radius - Vector3.Distance(areaTarget.gameObject.transform.position, transform.position)));
+				areaTarget.TakeDamage((int)(damageAmount - Vector3.Distance(areaTarget.gameObject.transform.position, transform.position)));
 			}
 		}
 		

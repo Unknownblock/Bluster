@@ -12,7 +12,8 @@ public class InputManager : MonoBehaviour
     public KeyCode sprintKey = KeyCode.LeftShift;
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode interactKey = KeyCode.E;
-    public KeyCode dropWeaponKey = KeyCode.Q;
+    public KeyCode dropWeaponKey = KeyCode.G;
+    public KeyCode lastWeaponInput = KeyCode.Q;
 
     public static InputManager Instance { get; set; }
 

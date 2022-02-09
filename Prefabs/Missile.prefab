@@ -4980,7 +4980,7 @@ MonoBehaviour:
   explosionRadius: 10
   minDistanceFromObjects: 2
   speed: 20000
-  returnSpeed: 500
+  returnSpeed: 350
   lastKnownPosition: {x: 0, y: 0, z: 0}
   lookAtRotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!54 &2105753985316417009

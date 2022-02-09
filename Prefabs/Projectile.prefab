@@ -110,7 +110,7 @@ Transform:
   m_GameObject: {fileID: 7107306530856377488}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
-  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_LocalScale: {x: 0.05, y: 0.05, z: 0.05}
   m_Children:
   - {fileID: 7032895543248385906}
   m_Father: {fileID: 0}
@@ -125,12 +125,12 @@ Rigidbody:
   m_GameObject: {fileID: 7107306530856377488}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 2
-  m_AngularDrag: 2
+  m_Drag: 0
+  m_AngularDrag: 500
   m_UseGravity: 0
   m_IsKinematic: 0
-  m_Interpolate: 1
-  m_Constraints: 112
+  m_Interpolate: 2
+  m_Constraints: 0
   m_CollisionDetection: 2
 --- !u!114 &1542080277004295482
 MonoBehaviour:
@@ -192,7 +192,7 @@ TrailRenderer:
   m_Time: 0.1
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.15
+    widthMultiplier: 0.05
     widthCurve:
       serializedVersion: 2
       m_Curve:

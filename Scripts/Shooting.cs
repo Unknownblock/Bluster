@@ -131,6 +131,8 @@ public class Shooting : MonoBehaviour
 
 	private void WeaponInput()
 	{
+		shootPoint.transform.forward = MoveCamera.Instance.transform.forward;
+		
 		//Weapon Limitations And CanShoot State
 		if (currentMagazineAmmo > maxMagazineAmmo) 
 		{
@@ -224,9 +226,9 @@ public class Shooting : MonoBehaviour
 			
 			//Rotating The Bullet By The Spread
 			bullet.transform.forward = shootPoint.forward + new Vector3(xSpread, ySpread, zSpread);
-			
+
 			//Adding Force To The Bullet By The Shoot Force
-			bullet.GetComponent<Rigidbody>().AddForce(shootForce * bullet.transform.forward, ForceMode.VelocityChange);
+			bullet.GetComponent<Rigidbody>().velocity = shootPoint.gameObject.transform.forward * shootForce;
 			
 			//Adding Range To The Bullets
 			Destroy(bullet, range);

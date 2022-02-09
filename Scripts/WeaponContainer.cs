@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using UnityEngine;
 
 [Serializable]
@@ -24,8 +23,12 @@ public class WeaponContainer : MonoBehaviour
 {
     public int currentSelected;
 
-    public float throwForce;
+    public int lastSelected;
 
+    public int lateSelected;
+
+    public float throwForce;
+    
     public Weapon[] weapons;
 
     public static WeaponContainer Instance { get; private set; }
@@ -35,10 +38,21 @@ public class WeaponContainer : MonoBehaviour
         //Setting This To a Singleton
         Instance = this;
     }
-    
+
+    private void LateUpdate()
+    {
+        lateSelected = currentSelected;
+    }
+
     public void FixedUpdate()
     {
         ChangeInput();
+        
+        if (currentSelected != lateSelected)
+        {
+            print("Fuck");
+            lastSelected = lateSelected;
+        }
 
         if (currentSelected > weapons.Length - 1)
         {
@@ -82,6 +96,11 @@ public class WeaponContainer : MonoBehaviour
     {
         currentSelected += (int) Input.mouseScrollDelta.y;
 
+        if (Input.GetKeyDown(InputManager.Instance.lastWeaponInput))
+        {
+            currentSelected = lastSelected;
+        }
+        
         for (var i = 0; i < weapons.Length; i++)
         {
             if (Input.GetKeyDown(weapons[i].changeInput))
@@ -91,7 +110,7 @@ public class WeaponContainer : MonoBehaviour
         }
     }
 
-    public void DropWeapon(Weapon weapon, string wantedName)
+    private void DropWeapon(Weapon weapon, string wantedName)
     {
         GameObject droppedWeapon = Instantiate(weapon.dropWeaponPrefab, weapon.weaponPrefab.transform.position, weapon.weaponPrefab.transform.rotation);
         
@@ -105,5 +124,7 @@ public class WeaponContainer : MonoBehaviour
         droppedWeapon.GetComponent<PickUpWeapon>().weaponName = wantedName;
         
         weapon.haveTheWeapon = false;
+
+        currentSelected = lastSelected;
     }
 }

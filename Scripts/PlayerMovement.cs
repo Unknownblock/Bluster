@@ -15,11 +15,13 @@ public class PlayerMovement : MonoBehaviour
 	[Header("Movement")]
 	public float extraGravity;
 
-	public float moveSpeed = 12.5f;
+	public float currentMoveSpeed = 12.5f;
 
 	public float walkSpeed = 12.5f;
 
 	public float sprintSpeed = 17.5f;
+
+	public float landSpeed;
 
 	public float movementMultiplier = 10f;
 
@@ -91,7 +93,7 @@ public class PlayerMovement : MonoBehaviour
 	public float crouchTilt;
 	public float crouchPos = 0.65f;
 	public float slideForce = 500f;
-
+	
 	[Header("Fall Damage")]
 	public float fallSpeed;
 
@@ -133,9 +135,8 @@ public class PlayerMovement : MonoBehaviour
 	{
 		ControlDrag();
 		
-		
 		velocity = rb.velocity; //Velocity Equals Player Rigidbody Velocity 
-		
+
 		//Awake The Rigidbody If Grounded
 		if (isGrounded)
 		{
@@ -183,12 +184,13 @@ public class PlayerMovement : MonoBehaviour
 			isSliding = true; //IsSliding Equals True
 			
 			readyToMove = false; //Ready To Move Equals False
-			
-			//Setting The LocalScale To Crouch Scale
+
+			//Setting The LocalScale To Start Player Scale
 			transform.localScale = crouchScale;
 			
 			//Setting The Crouch Position
-			transform.position = new Vector3(gameObject.transform.position.x, transform.position.y - crouchPos, gameObject.transform.transform.position.z);
+			transform.gameObject.transform.position = new Vector3(gameObject.transform.position.x, transform.position.y - crouchPos, gameObject.transform.transform.position.z);
+			
 			
 			//Adding Force Forward
 			if (!(rb.velocity.magnitude <= 0.5) && isGrounded)
@@ -206,12 +208,12 @@ public class PlayerMovement : MonoBehaviour
 			//IsSliding Equals False
 			isSliding = false;
 			
-			//Ready To Move Equals True
-			readyToMove = true;
-			
 			//Setting The LocalScale To Start Player Scale
 			transform.localScale = playerScale;
-			
+
+			//Ready To Move Equals True
+			readyToMove = true;
+
 			//Setting The Normal Player Position
 			transform.position = new Vector3(gameObject.transform.position.x, transform.position.y + crouchPos, gameObject.transform.gameObject.transform.position.z);
 		}
@@ -220,8 +222,6 @@ public class PlayerMovement : MonoBehaviour
 	private void ControlDrag()
 	{
 		//Setting The Rigidbody Drag
-
-		
 		if (isGrounded)
 		{
 			if (isSliding)
@@ -247,30 +247,37 @@ public class PlayerMovement : MonoBehaviour
 		{
 			Invoke(nameof(JumpCooldown), jumpCoolDown);
 		}
+		
 		if (!isGrounded)
 		{
 			rb.AddForce(Vector3.down * extraGravity);
 		}
+		
 		if (playerInput.jumpInput)
 		{
 			Jump();
 		}
+		
 		if (playerInput.crouchInput && isGrounded && readyToJump)
 		{
 			rb.AddForce(Vector3.down * 60f);
 		}
+		
 		if (isGrounded && readyToMove)
 		{
-			rb.AddForce(moveDirection.normalized * (moveSpeed * movementMultiplier), ForceMode.Acceleration);
+			rb.AddForce(moveDirection.normalized * (currentMoveSpeed * movementMultiplier), ForceMode.Acceleration);
 		}
+		
 		else if (isGrounded && isSurf && readyToMove)
 		{
-			rb.AddForce(slopeMoveDirection.normalized * (moveSpeed * movementMultiplier), ForceMode.Force);
+			rb.AddForce(slopeMoveDirection.normalized * (currentMoveSpeed * movementMultiplier), ForceMode.Force);
 		}
+		
 		else if (!isGrounded && readyToMove)
 		{
-			rb.AddForce(moveDirection.normalized * (moveSpeed * movementMultiplier * airMultiplier), ForceMode.Acceleration);
+			rb.AddForce(moveDirection.normalized * (currentMoveSpeed * movementMultiplier * airMultiplier), ForceMode.Acceleration);
 		}
+		
 		if (!readyToJump)
 		{
 			resetJumpCounter++;
@@ -287,17 +294,20 @@ public class PlayerMovement : MonoBehaviour
 		{
 			StartCrouch();
 		}
+		
 		if (!playerInput.crouchInput && isSliding)
 		{
 			StopCrouch();
 		}
+		
 		if (playerInput.sprintInput && isGrounded)
 		{
-			moveSpeed = Mathf.Lerp(moveSpeed, sprintSpeed, acceleration * Time.deltaTime);
+			currentMoveSpeed = Mathf.Lerp(currentMoveSpeed, sprintSpeed, acceleration * Time.deltaTime);
 		}
+		
 		else
 		{
-			moveSpeed = Mathf.Lerp(moveSpeed, walkSpeed, acceleration * Time.deltaTime);
+			currentMoveSpeed = Mathf.Lerp(currentMoveSpeed, walkSpeed, acceleration * Time.deltaTime);
 		}
 	}
 
@@ -362,6 +372,11 @@ public class PlayerMovement : MonoBehaviour
 	{
 		return Vector3.Angle(Vector3.up, v) < maxSlopeAngle;
 	}
+	
+	private bool IsWall(Vector3 v)
+	{
+		return Math.Abs(90f - Vector3.Angle(Vector3.up, v)) < 0.1f;
+	}
 
 	private bool IsSurf(Vector3 v)
 	{
@@ -380,15 +395,35 @@ public class PlayerMovement : MonoBehaviour
 		if (groundMask == (groundMask | (1 << layer)) && IsFloor(normal))
 		{
 			MoveCamera.Instance.BobOnce(new Vector3(0f, fallSpeed, 0f), offSetPos);
+			
+			currentMoveSpeed = landSpeed;
+			
 			hitPoint = other.contacts[0].point;
+			
 			GameObject obj = Instantiate(playerSmokeFx, hitPoint, Quaternion.LookRotation(transform.position - hitPoint));
 			ParticleSystem.VelocityOverLifetimeModule velocityOverLifetime = obj.GetComponent<ParticleSystem>().velocityOverLifetime;
 			velocityOverLifetime.x = velocity.x * 2f;
 			velocityOverLifetime.z = velocity.z * 2f;
+			
 			Destroy(obj, fxDestroyTime);
+			
 			if (fallSpeed <= fallDamageVel)
 			{
 				playerHealth.Damage((int)(0f - fallSpeed), other.gameObject);
+			}
+		}
+		
+		if (IsWall(normal))
+		{
+			Vector3 normalized = velocity.normalized;
+			Vector3 vector = transform.position + Vector3.up * 1.6f;
+			
+			if (!Physics.Raycast(vector, normalized, 1.3f, groundMask) && Physics.Raycast(vector + normalized * 1.3f, Vector3.down, out var hitInfo, 3f, groundMask))
+			{
+				Vector3 vector2 = hitInfo.point + Vector3.up * gameObject.transform.localScale.y * 0.5f;
+				MoveCamera.Instance.vaultOffset += transform.position - vector2;
+				gameObject.transform.position = vector2;
+				rb.velocity = velocity;
 			}
 		}
 	}
@@ -404,6 +439,7 @@ public class PlayerMovement : MonoBehaviour
 		{
 			Vector3 normal = other.contacts[i].normal;
 			normal = new Vector3(normal.x, Mathf.Abs(normal.y), normal.z);
+			
 			if (IsFloor(normal))
 			{
 				hitPoint = other.contacts[0].point;
@@ -413,6 +449,7 @@ public class PlayerMovement : MonoBehaviour
 				cancellingGrounded = false;
 				slopeMoveDirection = Vector3.ProjectOnPlane(moveDirection, other.contacts[0].normal);
 			}
+			
 			if (IsSurf(normal))
 			{
 				cancellingSurf = false;

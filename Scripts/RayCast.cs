@@ -3,14 +3,9 @@ using UnityEngine;
 public class RayCast : MonoBehaviour
 {
     public bool enableIndicator;
-    public bool aimAssist;
-    public float aimAssistAmount;
-    public float aimAssistSpeed;
     public float radius;
     public float distance;
-    public GameObject aimAssistThing;
     public GameObject indicator;
-    public LayerMask aimAssistMask;
     public LayerMask indicatorMask;
 
     private void Update()
@@ -30,18 +25,6 @@ public class RayCast : MonoBehaviour
                     QueryTriggerInteraction.UseGlobal))
             {
                 StopFade();
-            }
-        }
-
-        if (aimAssist)
-        {
-            if (Physics.SphereCast(transform.position, aimAssistAmount, transform.forward, out var hit, distance, aimAssistMask, QueryTriggerInteraction.UseGlobal))
-            {
-                var targetRotation = Quaternion.LookRotation(PlayerMovement.Instance.transform.position - hit.transform.position);
-
-                var rot = Quaternion.Slerp(Quaternion.LookRotation(PlayerInput.Instance.cameraRot), targetRotation, aimAssistSpeed * Time.deltaTime);
-
-                PlayerInput.Instance.cameraRot = rot.eulerAngles;
             }
         }
     }

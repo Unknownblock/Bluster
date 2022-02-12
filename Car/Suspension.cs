@@ -1,21 +1,32 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Suspension : MonoBehaviour
 {
-   [Header("Assignable Variables")] 
+   [Header("Assignable Variables")] public float addedWheelPosition;
    public float suspensionLength;
    public float restHeight;
    public float springTravel;
    public float springStiffness;
    public float damperStiffness;
+   public float wheelAngleVelocity;
+   public float steeringAngle;
+   public float traction;
+   public float steerTime = 15f;
+   public float steerAngle = 37f;
+   public float lastCompression;
    public float wheelRadius;
+   public GameObject wheel;
    public Transform currentWheel;
+   public LayerMask groundLayer;
 
-   [Header("Bool Variables")] 
+   [Header("Information Variables")]
+   public bool isRearWheel;
    public bool isGrounded;
+   public enum Type{RightWheel, LeftWheel}
+   public Type type;
 
    [Header("Don't Care About")]
+   private int lastSkid;
    private float _minLength;
    private float _maxLength;
    private float _lastLength;
@@ -27,22 +38,25 @@ public class Suspension : MonoBehaviour
    public Vector3 hitPos;
    public Vector3 hitNormal;
    public float hitHeight;
+   public Vector3 suspensionForce;
 
-   private Vector3 suspensionForce;
+   public Rigidbody rb;
 
-   private Rigidbody _rb;
-
-   private void Start()
+   private void Update()
    {
-      _rb = transform.parent.GetComponent<Rigidbody>();
+      if (!isRearWheel)
+      {
+         wheelAngleVelocity = Mathf.Lerp(wheelAngleVelocity, steeringAngle, steerTime * Time.deltaTime);
+         transform.localRotation = Quaternion.Euler(Vector3.up * wheelAngleVelocity);
+      }
    }
 
    private void FixedUpdate()
    {
       _minLength = _restLength - springTravel;
       _maxLength = _restLength + springTravel;
-
-      if (Physics.Raycast(transform.position, -transform.up, out var hit, _maxLength + wheelRadius))
+      
+      if (Physics.CapsuleCast(transform.position, transform.position, suspensionLength, -transform.up, out var hit, _maxLength + wheelRadius, groundLayer) && hit.transform.gameObject != currentWheel.gameObject)
       {
          _lastLength = _springLength;
          _springLength = hit.distance - wheelRadius;
@@ -53,7 +67,7 @@ public class Suspension : MonoBehaviour
 
          suspensionForce = (_springForce + _damperForce) * transform.up;
          
-         _rb.AddForceAtPosition(suspensionForce, hit.point);
+         rb.AddForceAtPosition(suspensionForce, hit.point);
          
          hitPos = hit.point;
          hitNormal = hit.normal;
@@ -65,6 +79,21 @@ public class Suspension : MonoBehaviour
       {
          isGrounded = false;
          hitHeight = suspensionLength + restHeight;
+      }
+   }
+   
+   private void LateUpdate()
+   {
+      if (traction > 0.05f && hitPos != Vector3.zero && isGrounded)
+      {
+         if ((bool)Skidmarks.Instance)
+         {
+            lastSkid = Skidmarks.Instance.AddSkidMark(hitPos + rb.velocity * Time.fixedDeltaTime, hitNormal, traction * 0.9f, lastSkid);
+         }
+      }
+      else
+      {
+         lastSkid = -1;
       }
    }
 }

@@ -50,8 +50,11 @@ public class CarMovement : MonoBehaviour
 	{
         Vector3 vector = XZVector(_rb.velocity);
         Vector3 localVel = transform.InverseTransformDirection(XZVector(_rb.velocity));
+        Vector3 localAngularVel = transform.InverseTransformDirection(XZVector(_rb.angularVelocity));
         float speed = vector.magnitude * 3.6f * Mathf.Sign(transform.InverseTransformDirection(vector).z);
         Steering(speed);
+        
+        print(localVel);
 
         if (Input.GetKey(InputManager.Instance.jumpKey))
         {
@@ -63,48 +66,18 @@ public class CarMovement : MonoBehaviour
             var pointVelocity = XZVector(_rb.GetPointVelocity(everyWheel.hitPos));
             var lateralVelocity = Vector3.Project(pointVelocity, everyWheel.transform.right);
 
-            var frictionForce = lateralVelocity * _rb.mass;
+            var frictionForce = lateralVelocity;
             
             _rb.AddForceAtPosition(-frictionForce * grip, everyWheel.hitPos);
             
-
             if (everyWheel.isRearWheel && everyWheel.isGrounded)
             {
-                if (Input.GetKey(InputManager.Instance.forwardKey))
-                {
-                    _rb.AddForceAtPosition(everyWheel.transform.forward * moveSpeed, everyWheel.hitPos);
-                }
-
-                if (Input.GetKey(InputManager.Instance.backwardKey))
-                {
-                    _rb.AddForceAtPosition(-everyWheel.transform.forward * moveSpeed, everyWheel.hitPos);
-                }
+                _rb.AddForceAtPosition(everyWheel.transform.forward * (moveSpeed * verticalMovement), everyWheel.hitPos);
             }
             
             if (!everyWheel.isRearWheel && everyWheel.isGrounded && localVel.z > 5)
             {
-                if (Input.GetKey(InputManager.Instance.rightKey))
-                {
-                    _rb.AddForceAtPosition(everyWheel.transform.right * (turnSpeed * (localVel.z * 0.025f)), everyWheel.hitPos);
-                }
-
-                if (Input.GetKey(InputManager.Instance.leftKey))
-                {
-                    _rb.AddForceAtPosition(-everyWheel.transform.right * (turnSpeed * (localVel.z * 0.025f)), everyWheel.hitPos);
-                }
-            }
-            
-            if (!everyWheel.isRearWheel && everyWheel.isGrounded && localVel.z < -5)
-            {
-                if (Input.GetKey(InputManager.Instance.rightKey))
-                {
-                    _rb.AddForceAtPosition(everyWheel.transform.right * (turnSpeed * (-localVel.z * 0.025f)), everyWheel.hitPos);
-                }
-
-                if (Input.GetKey(InputManager.Instance.leftKey))
-                {
-                    _rb.AddForceAtPosition(-everyWheel.transform.right * (turnSpeed * (-localVel.z * 0.025f)), everyWheel.hitPos);
-                }
+                _rb.AddForceAtPosition(-everyWheel.transform.right * (turnSpeed * horizontalMovement * (localVel.z * 0.025f)), everyWheel.hitPos);
             }
         }
     }
@@ -158,7 +131,7 @@ public class CarMovement : MonoBehaviour
                 everyWheel.currentWheel.parent = everyWheel.transform;
                 everyWheel.currentWheel.transform.localPosition = Vector3.zero;
                 everyWheel.currentWheel.gameObject.transform.localRotation = Quaternion.identity;
-                everyWheel.currentWheel.localScale = Vector3.one * everyWheel.suspensionLength * 2f;
+                everyWheel.currentWheel.localScale = Vector3.one * everyWheel.wheelRadius * 2f;
             }
         }
     }
@@ -172,11 +145,10 @@ public class CarMovement : MonoBehaviour
     {
         foreach (Suspension everyWheel in wheelPositions)
         {
-            float suspensionLength = everyWheel.suspensionLength;
-            float yPos = Mathf.Lerp(-everyWheel.hitHeight + suspensionLength + everyWheel.addedWheelPosition, everyWheel.currentWheel.transform.localPosition.y, Time.deltaTime * 20f);
-            everyWheel.currentWheel.transform.localPosition = new Vector3(0, yPos, 0f);
-            everyWheel.currentWheel.Rotate(Vector3.right, XZVector(_rb.velocity).magnitude * 1f * direction);
-            everyWheel.currentWheel.localScale = Vector3.one * (everyWheel.suspensionLength * 2f);
+            float yPos = Mathf.Lerp(-everyWheel.hitHeight + everyWheel.wheelRadius + everyWheel.addedWheelPosition, everyWheel.currentWheel.transform.localPosition.y, Time.deltaTime * everyWheel.wheelGetBackSpeed);
+            everyWheel.currentWheel.transform.localPosition = Vector3.Lerp(everyWheel.currentWheel.gameObject.transform.localPosition, new Vector3(0, yPos, 0f), Time.deltaTime * everyWheel.wheelMoveSpeed);
+            everyWheel.currentWheel.Rotate(Vector3.right, XZVector(_rb.velocity).magnitude * direction);
+            everyWheel.currentWheel.localScale = Vector3.one * (everyWheel.wheelRadius * 2f);
             everyWheel.transform.localScale = Vector3.one / transform.localScale.x;
         }
     }

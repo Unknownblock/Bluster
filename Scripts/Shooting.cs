@@ -228,7 +228,7 @@ public class Shooting : MonoBehaviour
 			bullet.transform.forward = shootPoint.forward + new Vector3(xSpread, ySpread, zSpread);
 
 			//Adding Force To The Bullet By The Shoot Force
-			bullet.GetComponent<Rigidbody>().velocity = shootPoint.gameObject.transform.forward * shootForce;
+			bullet.GetComponent<Rigidbody>().velocity = bullet.gameObject.transform.forward * shootForce;
 			
 			//Adding Range To The Bullets
 			Destroy(bullet, range);

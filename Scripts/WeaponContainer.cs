@@ -6,6 +6,8 @@ public class Weapon
 {
     public string name;
 
+    public bool canSwitchTo;
+    public bool canSwitchFrom;
     public bool canDrop;
     public bool haveTheWeapon;
     
@@ -50,7 +52,6 @@ public class WeaponContainer : MonoBehaviour
         
         if (currentSelected != lateSelected)
         {
-            print("Fuck");
             lastSelected = lateSelected;
         }
 
@@ -94,8 +95,6 @@ public class WeaponContainer : MonoBehaviour
 
     private void ChangeInput()
     {
-        currentSelected += (int) Input.mouseScrollDelta.y;
-
         if (Input.GetKeyDown(InputManager.Instance.lastWeaponInput))
         {
             currentSelected = lastSelected;
@@ -103,9 +102,19 @@ public class WeaponContainer : MonoBehaviour
         
         for (var i = 0; i < weapons.Length; i++)
         {
-            if (Input.GetKeyDown(weapons[i].changeInput))
+            if (!weapons[currentSelected].canSwitchFrom)
             {
                 currentSelected = i;
+            }
+            
+            else if (Input.GetKeyDown(weapons[i].changeInput))
+            {
+                currentSelected = i;
+            }
+
+            else
+            {
+                currentSelected += (int) Input.mouseScrollDelta.y;
             }
         }
     }

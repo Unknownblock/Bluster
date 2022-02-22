@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: -151167467834207433}
   - component: {fileID: 8556470538472464876}
   - component: {fileID: -6268921730266997724}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: DroppedPistol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -91,7 +91,7 @@ GameObject:
   - component: {fileID: 3868039296274055656}
   - component: {fileID: 2123770907477997730}
   - component: {fileID: 3196601644052372534}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: default
   m_TagString: Untagged
   m_Icon: {fileID: 0}

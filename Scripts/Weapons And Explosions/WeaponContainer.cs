@@ -1,37 +1,21 @@
 using System;
 using UnityEngine;
-
-[Serializable]
-public class Weapon
-{
-    public string name;
-
-    public bool canSwitchTo;
-    public bool canSwitchFrom;
-    public bool canDrop;
-    public bool haveTheWeapon;
-    
-    public KeyCode changeInput;
-    
-    public GameObject weaponPrefab;
-    public GameObject dropWeaponPrefab;
-
-    public enum WeaponState {Selected, NotSelected}
-
-    public WeaponState weaponState;
-}
+using Random = UnityEngine.Random;
 
 public class WeaponContainer : MonoBehaviour
 {
+    [Header("Weapon Switching")]
     public int currentSelected;
-
     public int lastSelected;
-
     public int lateSelected;
-
+    
     public float throwForce;
     
     public Weapon[] weapons;
+
+    [Header("Weapon Picking Up")] public LayerMask pickUpMask;
+    public float pickUpDistance;
+    public float pickUpRadius;
 
     public static WeaponContainer Instance { get; private set; }
 
@@ -39,6 +23,14 @@ public class WeaponContainer : MonoBehaviour
     {
         //Setting This To a Singleton
         Instance = this;
+    }
+
+    private void Start()
+    {
+        foreach (var everyWeapon in weapons)
+        {
+            everyWeapon.id = Random.Range(0, 1000);
+        }
     }
 
     private void LateUpdate()
@@ -49,6 +41,7 @@ public class WeaponContainer : MonoBehaviour
     public void FixedUpdate()
     {
         ChangeInput();
+        PickingUpTheWeapon();
         
         if (currentSelected != lateSelected)
         {
@@ -67,7 +60,7 @@ public class WeaponContainer : MonoBehaviour
 
         foreach (var everyWeapon in weapons)
         {
-            if (weapons[currentSelected] != null && weapons[currentSelected].haveTheWeapon)
+            if (weapons[currentSelected] != null && weapons[currentSelected].isAvailable)
                 weapons[currentSelected].weaponState = Weapon.WeaponState.Selected;
 
             if (everyWeapon != weapons[currentSelected] && everyWeapon.weaponState == Weapon.WeaponState.Selected)
@@ -75,17 +68,17 @@ public class WeaponContainer : MonoBehaviour
                 everyWeapon.weaponState = Weapon.WeaponState.NotSelected;
             }
 
-            if (everyWeapon.weaponState == Weapon.WeaponState.Selected && everyWeapon.haveTheWeapon)
+            if (everyWeapon.weaponState == Weapon.WeaponState.Selected && everyWeapon.isAvailable)
             {
                 everyWeapon.weaponPrefab.SetActive(true);
 
                 if (Input.GetKeyDown(InputManager.Instance.dropWeaponKey) && everyWeapon.canDrop)
                 {
-                    DropWeapon(everyWeapon, everyWeapon.name);
+                    DropWeapon(everyWeapon, everyWeapon.name, everyWeapon.id);
                 }
             }
             
-            else if (everyWeapon.weaponState == Weapon.WeaponState.NotSelected || !everyWeapon.haveTheWeapon)
+            else if (everyWeapon.weaponState == Weapon.WeaponState.NotSelected || !everyWeapon.isAvailable)
             {
                 everyWeapon.weaponPrefab.SetActive(false);
             }
@@ -95,31 +88,34 @@ public class WeaponContainer : MonoBehaviour
 
     private void ChangeInput()
     {
-        if (Input.GetKeyDown(InputManager.Instance.lastWeaponInput))
+        currentSelected += (int) Input.mouseScrollDelta.y;
+        
+        if (Input.GetKeyDown(InputManager.Instance.lastWeaponKey))
         {
             currentSelected = lastSelected;
         }
-        
+
         for (var i = 0; i < weapons.Length; i++)
         {
-            if (!weapons[currentSelected].canSwitchFrom)
+            if (Input.GetKeyDown(weapons[i].changeInput))
             {
                 currentSelected = i;
-            }
-            
-            else if (Input.GetKeyDown(weapons[i].changeInput))
-            {
-                currentSelected = i;
-            }
-
-            else
-            {
-                currentSelected += (int) Input.mouseScrollDelta.y;
             }
         }
     }
 
-    private void DropWeapon(Weapon weapon, string wantedName)
+    private void PickingUpTheWeapon()
+    {
+        if (Input.GetKeyDown(InputManager.Instance.pickupWeaponKey))
+        {
+            if (Physics.SphereCast(transform.position, pickUpRadius, transform.forward, out var hit, pickUpDistance, pickUpMask, QueryTriggerInteraction.UseGlobal))
+            {
+                hit.transform.gameObject.GetComponent<PickUpWeapon>().PickUp();
+            }
+        }
+    }
+
+    private void DropWeapon(Weapon weapon, string wantedName, int wantedId)
     {
         GameObject droppedWeapon = Instantiate(weapon.dropWeaponPrefab, weapon.weaponPrefab.transform.position, weapon.weaponPrefab.transform.rotation);
         
@@ -131,9 +127,29 @@ public class WeaponContainer : MonoBehaviour
         }
         
         droppedWeapon.GetComponent<PickUpWeapon>().weaponName = wantedName;
+        droppedWeapon.GetComponent<PickUpWeapon>().weaponId = wantedId;
         
-        weapon.haveTheWeapon = false;
+        weapon.isAvailable = false;
 
         currentSelected = lastSelected;
+    }
+    
+    [Serializable]
+    public class Weapon
+    {
+        public string name;
+
+        public int id;
+    
+        public bool canDrop;
+        public bool isAvailable;
+    
+        public KeyCode changeInput;
+    
+        public GameObject weaponPrefab;
+        public GameObject dropWeaponPrefab;
+
+        public enum WeaponState {Selected, NotSelected}
+        public WeaponState weaponState;
     }
 }

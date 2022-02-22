@@ -50,15 +50,6 @@ public class PlayerInput : MonoBehaviour
 		Instance = this;
 	}
 
-	private void Start()
-	{
-		//Locking The Cursor
-		Cursor.lockState = CursorLockMode.Locked;
-		
-		//Making The Cursor Invisible
-		Cursor.visible = false;
-	}
-
 	private void Update()
 	{
 		Tilt();

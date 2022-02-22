@@ -12,8 +12,7 @@ public class RayCast : MonoBehaviour
     {
         if (enableIndicator)
         {
-            if (Physics.SphereCast(transform.position, radius, transform.forward, out var hit, distance, indicatorMask,
-                    QueryTriggerInteraction.UseGlobal))
+            if (Physics.SphereCast(transform.position, radius, transform.forward, out var hit, distance, indicatorMask, QueryTriggerInteraction.UseGlobal))
             {
                 StartFade();
                 indicator.transform.position = hit.transform.position;

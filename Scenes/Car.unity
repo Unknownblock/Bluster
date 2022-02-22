@@ -1350,6 +1350,7 @@ MonoBehaviour:
   brakeForce: 25
   moveSpeed: 15
   turnSpeed: 5
+  jumpSpeed: 100
   grip: 1
   wheelPositions:
   - {fileID: 201336801}

@@ -7,7 +7,10 @@ public class GrapplingHook : MonoBehaviour
     private void FixedUpdate()
     {
         if (!isLocked)
-            transform.rotation=Quaternion.LookRotation(GetComponent<Rigidbody>().velocity);
+        {
+            transform.rotation = Quaternion.LookRotation(GetComponent<Rigidbody>().velocity);
+            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        }
     }
     
     private void OnCollisionEnter()
@@ -33,7 +36,5 @@ public class GrapplingHook : MonoBehaviour
     private void OnCollisionExit()
     {
         isLocked = false;
-        
-        GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
     }
 }

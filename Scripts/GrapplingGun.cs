@@ -31,6 +31,11 @@ public class GrapplingGun : MonoBehaviour
         {
             ShootGrapple();
         }
+        
+        if (Input.GetKeyDown(InputManager.Instance.interactKey) && didShoot)
+        {
+            GetGrappleHookBack();
+        }
     }
 
     private void ShootGrapple()
@@ -42,5 +47,13 @@ public class GrapplingGun : MonoBehaviour
         spawnedGrapple.GetComponent<Rigidbody>().AddForce(shootPoint.transform.forward * shootForce);
 
         currentGrapplingHook = spawnedGrapple;
+    }
+
+    private void GetGrappleHookBack()
+    {
+        Destroy(PlayerMovement.Instance.GetComponent<SpringJoint>());
+        Destroy(currentGrapplingHook);
+
+        didShoot = false;
     }
 }

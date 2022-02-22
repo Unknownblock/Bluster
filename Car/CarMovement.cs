@@ -11,6 +11,7 @@ public class CarMovement : MonoBehaviour
     public float brakeForce;
     public float moveSpeed;
     public float turnSpeed;
+    public float jumpSpeed;
     public float grip;
     
     public Suspension[] wheelPositions;
@@ -78,6 +79,11 @@ public class CarMovement : MonoBehaviour
             if (!everyWheel.isRearWheel && everyWheel.isGrounded && localVel.z > 5)
             {
                 _rb.AddForceAtPosition(-everyWheel.transform.right * (turnSpeed * horizontalMovement * (localVel.z * 0.025f)), everyWheel.hitPos);
+            }
+            
+            if (Input.GetKeyDown(InputManager.Instance.jumpKey) && isGrounded)
+            {
+                _rb.AddForceAtPosition(everyWheel.transform.up * jumpSpeed, everyWheel.hitPos);
             }
         }
     }

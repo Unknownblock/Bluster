@@ -76,10 +76,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weaponName: Pistol
-  pickUpRadius: 0.75
-  playerMask:
-    serializedVersion: 2
-    m_Bits: 64
+  weaponId: 0
+  amountOfSupportingWeapons: 2
 --- !u!1 &5411117014552203987
 GameObject:
   m_ObjectHideFlags: 0

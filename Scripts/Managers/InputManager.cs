@@ -14,7 +14,6 @@ public class InputManager : MonoBehaviour
     public KeyCode interactKey = KeyCode.E;
     public KeyCode pickupWeaponKey = KeyCode.F;
     public KeyCode dropWeaponKey = KeyCode.G;
-    public KeyCode lastWeaponKey = KeyCode.Q;
     public KeyCode inventoryKey = KeyCode.Tab;
 
     public static InputManager Instance { get; set; }

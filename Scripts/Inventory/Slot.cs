@@ -1,30 +1,19 @@
 ﻿using UnityEngine;
-using UnityEngine.EventSystems;
 
-public class Slot : MonoBehaviour, IPointerDownHandler
+public class Slot : MonoBehaviour
 {
     public Inventory inventory;
     public Item currentSlotItem;
     public int amountOfItems;
     public int maxAmountOfItems;
 
-    public void OnPointerDown(PointerEventData eventData)
+    private void Update()
     {
-        if (inventory.selectedItem == null && currentSlotItem == inventory.selectedItem)
+        if (currentSlotItem != null)
         {
-
-            currentSlotItem.itemState = Item.ItemState.GettingGrabbed;
-            inventory.selectedItem = currentSlotItem;
-            currentSlotItem = null;
-            print("Getting Grabbed");
+            currentSlotItem.transform.SetParent(gameObject.transform);
         }
 
-        if (inventory.selectedItem != null)
-        {
-            currentSlotItem = inventory.selectedItem;
-            inventory.selectedItem = null;
-            currentSlotItem.itemState = Item.ItemState.Static;
-            print("Static");
-        }
+        Mathf.Clamp(amountOfItems, 1, maxAmountOfItems);
     }
 }

@@ -1,33 +1,37 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class Inventory : MonoBehaviour
+public class Inventory : MonoBehaviour, IPointerDownHandler
 {
+    [Header("UI And Looks")]
     public Vector2 gap;
     public float slotSize;
     public int size;
     public int rows;
     public Vector2Int distance;
     public GameObject inventorySlot;
+    
+    [Header("Important Things")]
     public Item selectedItem;
     public List<Slot> inventorySlots;
     public List<Item> inventoryItems;
+    
+    [Header("Item Picking Up")] public LayerMask pickUpMask;
+    public float pickUpDistance;
+    public float pickUpRadius;
 
     private void Update()
     {
         ManagingTheSlots();
         SortingTheSlots();
-        DraggingItems();
-
-        Mathf.Clamp(size, 0, 100);
-        Mathf.Clamp(rows, 0, 100);
+        ItemPositionHandling();
     }
 
     private void SortingTheSlots()
     {
         var slots = inventorySlots.ToArray();
-        var items = inventoryItems.ToArray();
-        
+
         float yPosition = gameObject.transform.position.y;
         
         for (int i = 0; i < slots.Length; i++)
@@ -43,19 +47,6 @@ public class Inventory : MonoBehaviour
             
             slots[i].transform.position = new Vector3(xPosition + distance.x, yPosition + distance.y, transform.position.z);
         }
-
-        foreach (var everyItem in items)
-        {
-            if (everyItem.itemState == Item.ItemState.Static)
-            {
-                everyItem.transform.localPosition = Vector3.zero;
-            }
-            
-            if (everyItem.itemState == Item.ItemState.GettingGrabbed)
-            {
-                everyItem.transform.position = Input.mousePosition;
-            }
-        }
     }
 
     private void ManagingTheSlots()
@@ -68,6 +59,7 @@ public class Inventory : MonoBehaviour
             everySlot.gameObject.transform.localScale = new Vector3(slotSize, slotSize, slotSize);
         }
 
+        //Managing The Slots
         if (slots.Length < size)
         {
             for (var i = 0; i < size - slots.Length; i++)
@@ -92,23 +84,102 @@ public class Inventory : MonoBehaviour
 
         if (items.Length != slots.Length)
         {
-            foreach (var everyItem in items)
-            {
-                inventoryItems.Remove(everyItem);
-            }
-            
             foreach (var everySlot in slots)
             {
-                inventoryItems.Add(everySlot.currentSlotItem);
+                if (everySlot.currentSlotItem != null)
+                {
+                    inventoryItems.Add(everySlot.currentSlotItem);
+                }
+
+                if (everySlot.currentSlotItem == null)
+                {
+                    inventoryItems.Add(null);
+                }
             }
         }
     }
 
-    private void DraggingItems()
+    private void ItemPositionHandling()
     {
-        if (selectedItem != null)
+        var items = inventoryItems.ToArray();
+        
+        foreach (var everyItem in items)
         {
-            selectedItem.transform.position = Input.mousePosition;
+            if (everyItem != null)
+            {
+                if (everyItem.itemState == Item.ItemState.Static)
+                {
+                    everyItem.transform.localPosition = Vector3.zero;
+                }
+
+                if (everyItem.itemState == Item.ItemState.GettingGrabbed)
+                {
+                    everyItem.transform.position = Input.mousePosition;
+                }
+            }
         }
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        var slots = inventorySlots.ToArray();
+
+        foreach (var everySlot in slots)
+        {
+            Slot slot = eventData.pointerPressRaycast.gameObject.GetComponent<Slot>();
+            
+            if (eventData.pointerPressRaycast.gameObject == everySlot.gameObject)
+            {
+                if (selectedItem == null && slot.currentSlotItem != null && slot != null)
+                {
+                    DragItem(slot);
+                }
+                
+                else if (selectedItem != null && slot.currentSlotItem == null && slot != null)
+                {
+                    PutItem(slot);
+                }
+            }
+            
+            else if (selectedItem != null  && eventData.pointerPressRaycast.gameObject != everySlot.gameObject)
+            {
+                if (selectedItem != null && slot.currentSlotItem == null && slot != null)
+                {
+                    print("Drop Item");
+                }
+            }
+        }
+    }
+
+    private void DragItem(Slot slot)
+    {
+        selectedItem = slot.currentSlotItem;
+        slot.currentSlotItem.itemState = Item.ItemState.GettingGrabbed;
+        slot.currentSlotItem = null;
+        print("Getting Dragged");
+    }
+    
+    private void PutItem(Slot slot)
+    {
+        slot.currentSlotItem = selectedItem;
+        slot.currentSlotItem.itemState = Item.ItemState.Static;
+        selectedItem = null;
+        print("Static");
+    }
+
+    private void PickUpItem()
+    {
+        if (Input.GetKeyDown(InputManager.Instance.pickupWeaponKey))
+        {
+            if (Physics.SphereCast(transform.position, pickUpRadius, transform.forward, out var hit, pickUpDistance, pickUpMask, QueryTriggerInteraction.UseGlobal))
+            {
+                hit.transform.gameObject.GetComponent<PickUpWeapon>().PickUp();
+            }
+        }
+    }
+
+    private void PutItemInInventory(Item item)
+    {
+        
     }
 }

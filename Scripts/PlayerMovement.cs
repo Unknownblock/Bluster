@@ -439,7 +439,7 @@ public class PlayerMovement : MonoBehaviour
 		{
 			Vector3 normal = other.contacts[i].normal;
 			normal = new Vector3(normal.x, Mathf.Abs(normal.y), normal.z);
-			
+
 			if (IsFloor(normal))
 			{
 				hitPoint = other.contacts[0].point;
@@ -463,6 +463,7 @@ public class PlayerMovement : MonoBehaviour
 		{
 			cancellingGrounded = true;
 		}
+		
 		else
 		{
 			groundCancel++;
@@ -471,12 +472,14 @@ public class PlayerMovement : MonoBehaviour
 				StopGrounded();
 			}
 		}
+		
 		if (!cancellingSurf)
 		{
 			cancellingSurf = true;
 			surfCancel = 1;
 			return;
 		}
+		
 		surfCancel++;
 		if (!(surfCancel <= (double)delay))
 		{

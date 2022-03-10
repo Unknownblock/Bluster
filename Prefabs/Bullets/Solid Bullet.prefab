@@ -106,13 +106,13 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8040891292835027638}
   serializedVersion: 2
-  m_Mass: 1
-  m_Drag: 1
+  m_Mass: 500
+  m_Drag: 5
   m_AngularDrag: 0.05
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 1
-  m_Constraints: 112
+  m_Constraints: 0
   m_CollisionDetection: 2
 --- !u!114 &1752556053847776028
 MonoBehaviour:
@@ -187,6 +187,15 @@ TrailRenderer:
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.7063733
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: -0.927545
+        outSlope: -0.927545
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.7674033
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4

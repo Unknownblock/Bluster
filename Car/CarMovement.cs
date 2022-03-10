@@ -1,28 +1,28 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 public class CarMovement : MonoBehaviour
 {
-    public enum DriveType {FrontWheelDrive, RearWheelDrive}
-
-    public DriveType driveType;
-
-    [Header("Assignable Variables")] public float wheelBase;
-    public float rearTrack;
-    public float turnRadius;
-    public float jumpForce;
-    public float brakeForce;
+    [Header("Assignable Variables")]
     public float moveSpeed;
-    public float turnSpeed;
+    public float engineForce;
 
     public Suspension[] wheelPositions;
 
+    [Header("Information Variables")] 
     public bool isGrounded;
-    
+    public bool isBreaking;
+
     public float horizontalMovement;
     public float verticalMovement;
 
     private Rigidbody _rb;
 
+    public void Print(string text)
+    {
+        print(text);
+    }
+    
     private void Awake()
     {
         InitWheels();
@@ -35,64 +35,72 @@ public class CarMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        MoveWheels();
         Movement();
         MyInput();
         CheckGrounded();
     }
 
+    private void Update()
+    {
+        MoveWheels();
+    }
+
     private void Movement()
-	{
-        Vector3 unused1 = XZVector(_rb.velocity);
-        Vector3 localVel = transform.InverseTransformDirection(XZVector(_rb.velocity));
-        Vector3 unused = transform.InverseTransformDirection(XZVector(_rb.angularVelocity));
+    {
         Steering();
-        
-        if (isGrounded && Input.GetKeyDown(InputManager.Instance.jumpKey))
-        {
-            _rb.AddForce(transform.up * jumpForce);
-        }
 
         foreach (var everyWheel in wheelPositions)
         {
-            if (everyWheel.isMotorized)
+            var wheelRb = everyWheel.currentWheel.GetComponent<Rigidbody>();
+            
+            var pointVelocity = XZVector(_rb.GetPointVelocity(everyWheel.hitPos));
+            
+            Vector3 wheelVelocity = everyWheel.transform.InverseTransformDirection(pointVelocity);
+
+            wheelRb.maxAngularVelocity = engineForce * 2f;
+
+            moveSpeed = wheelRb.velocity.magnitude * verticalMovement;
+            
+            if (everyWheel.isGrounded)
             {
-                
+                _rb.AddForceAtPosition(transform.forward * (moveSpeed - 1f), everyWheel.hitPos);
             }
             
-            if (!everyWheel.isSteerable && everyWheel.isGrounded)
+            if (everyWheel.isMotorized)
             {
-                _rb.AddForceAtPosition(-transform.right * (turnSpeed * localVel.z * 0.001f * horizontalMovement), everyWheel.hitPos);
+                wheelRb.AddTorque(everyWheel.currentWheel.right * (verticalMovement * engineForce));
             }
         }
     }
-    
+
     private void MyInput()
     {
         horizontalMovement = 0f;
         verticalMovement = 0f;
-		
+
         //Horizontal Movement
         if (Input.GetKey(InputManager.Instance.rightKey))
         {
             horizontalMovement += 1f;
         }
-		
+
         if (Input.GetKey(InputManager.Instance.leftKey))
         {
             horizontalMovement -= 1f;
         }
-		
+
         //Vertical Movement
         if (Input.GetKey(InputManager.Instance.forwardKey))
         {
             verticalMovement += 1f;
         }
-		
+
         if (Input.GetKey(InputManager.Instance.backwardKey))
         {
             verticalMovement -= 1f;
         }
+        
+        isBreaking = Input.GetKey(InputManager.Instance.jumpKey);
     }
 
     private void Steering()
@@ -101,44 +109,7 @@ public class CarMovement : MonoBehaviour
         {
             if (everyWheel.isSteerable)
             {
-                if (horizontalMovement > 0)
-                {
-                    if (everyWheel.wheelPosition == Suspension.WheelPosition.LeftWheel)
-                    {
-                        everyWheel.steeringAngle = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius + rearTrack / 2)) * horizontalMovement;
-                    }
-
-                    if (everyWheel.wheelPosition == Suspension.WheelPosition.RightWheel)
-                    {
-                        everyWheel.steeringAngle = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius - rearTrack / 2)) * horizontalMovement;
-                    }
-                }
-
-                else if (horizontalMovement < 0)
-                {
-                    if (everyWheel.wheelPosition == Suspension.WheelPosition.LeftWheel)
-                    {
-                        everyWheel.steeringAngle = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius - rearTrack / 2)) * horizontalMovement;
-                    }
-
-                    if (everyWheel.wheelPosition == Suspension.WheelPosition.RightWheel)
-                    {
-                        everyWheel.steeringAngle = Mathf.Rad2Deg * Mathf.Atan(wheelBase / (turnRadius + rearTrack / 2)) * horizontalMovement;
-                    }
-                }
-
-                else
-                {
-                    if (everyWheel.wheelPosition == Suspension.WheelPosition.LeftWheel)
-                    {
-                        everyWheel.steeringAngle = 0f;
-                    }
-
-                    if (everyWheel.wheelPosition == Suspension.WheelPosition.RightWheel)
-                    {
-                        everyWheel.steeringAngle = 0f;
-                    }
-                }
+                everyWheel.steeringAngle = everyWheel.steerAngle * horizontalMovement;
             }
         }
     }
@@ -151,37 +122,36 @@ public class CarMovement : MonoBehaviour
             {
                 everyWheel.currentWheel = Instantiate(everyWheel.wheel).transform;
                 everyWheel.currentWheel.parent = everyWheel.transform;
+                everyWheel.currentWheel.name = everyWheel.currentWheel.parent.name + " Current Wheel";
             }
         }
     }
-    
+
     private Vector3 XZVector(Vector3 vector3)
     {
         return new Vector3(vector3.x, 0f, vector3.z);
     }
-    
+
     private void MoveWheels()
     {
-        Vector3 velocity = XZVector(_rb.velocity);
-        
         foreach (var everyWheel in wheelPositions)
         {
-            float yPos = -everyWheel.hitHeight + everyWheel.wheelRadius * 1.15f;
-            everyWheel.currentWheel.transform.localPosition = new Vector3(0, yPos, 0f);
+            var wantedWheelPos = everyWheel.transform.position + -everyWheel.gameObject.transform.up * (everyWheel.hitHeight + -everyWheel.wheelRadius);
+            everyWheel.currentWheel.transform.position = wantedWheelPos;
             everyWheel.currentWheel.localScale = Vector3.one * (everyWheel.wheelRadius * 2f);
         }
     }
-    
+
     private void CheckGrounded()
     {
-	    isGrounded = false;
-        
-	    foreach (var everyWheel in wheelPositions)
-	    {
-		    if (everyWheel.isGrounded)
-		    {
-			    isGrounded = true;
-		    }
-	    }
+        isGrounded = false;
+
+        foreach (var everyWheel in wheelPositions)
+        {
+            if (everyWheel.isGrounded)
+            {
+                isGrounded = true;
+            }
+        }
     }
 }

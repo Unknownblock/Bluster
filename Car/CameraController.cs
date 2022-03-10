@@ -2,9 +2,13 @@
 
 public class CameraController : MonoBehaviour
 {
+	public enum CameraZoomMode{MoveCamera, ZoomCamera}
+	public CameraZoomMode cameraZoomMode;
 	public GameObject playerCam;
+	public GameObject target;
 	public Vector3 cameraRot;
-	
+	public Vector3 distanceVector;
+	public float distanceAmount;
 	public float mouseX;
 	public float mouseY;
 	public float xRotation;
@@ -25,6 +29,19 @@ public class CameraController : MonoBehaviour
 
 	private void Look()
 	{
+		distanceAmount = Input.mouseScrollDelta.y;
+
+		if (cameraZoomMode == CameraZoomMode.ZoomCamera)
+		{
+			playerCam.transform.GetChild(0).transform.localPosition += distanceVector * distanceAmount;
+		}
+		
+		if (cameraZoomMode == CameraZoomMode.MoveCamera)
+		{
+			playerCam.transform.GetChild(0).transform.localPosition = Vector3.zero;
+			playerCam.transform.localPosition += playerCam.transform.forward * distanceAmount;
+		}
+
 		//Mouse Movement
 		mouseX = Input.GetAxisRaw("Mouse X");
 		mouseY = Input.GetAxisRaw("Mouse Y");

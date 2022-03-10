@@ -9,6 +9,6 @@ PhysicMaterial:
   m_Name: Wheel
   dynamicFriction: 100
   staticFriction: 100
-  bounciness: 0
+  bounciness: 1
   frictionCombine: 3
   bounceCombine: 0

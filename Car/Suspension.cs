@@ -4,6 +4,8 @@ public class Suspension : MonoBehaviour
 {
 	[Header("Important Variables")] 
 	public float grip;
+	public float driftBalance;
+	public float wheelMoveSpeed;
 	public float suspensionLength;
 	public float restLength;
 	public float restHeight;
@@ -13,12 +15,7 @@ public class Suspension : MonoBehaviour
 	public float wheelRadius;
 	public LayerMask collisionDetectionLayer;
 	
-	public enum WheelPosition{RightWheel, LeftWheel}
-
-	public WheelPosition wheelPosition;
-
-	[Header("Value Variables")] public float wheelMoveSpeed = 20f;
-	public float wheelGetBackSpeed = 20f;
+	[Header("Value Variables")]
 	public float wheelAngle;
 	public float steeringAngle;
 	public float traction;
@@ -32,15 +29,20 @@ public class Suspension : MonoBehaviour
 	public Transform currentWheel;
 	public LayerMask groundLayer;
 
-	[Header("Information Variables")] public bool isMotorized;
+	[Header("Information Variables")] 
+	public bool isMotorized;
 	public bool isSteerable;
+	public bool isBreakable;
 	public bool isGrounded;
 
-	[Header("Don't Care About")] public float hitHeight;
+	[Header("Don't Care About")] public GameObject hitObject;
+	public Vector3 longitudinalAngularVelocity;
+	public Vector3 suspensionForce;
+	public Vector3 wheelVelocity;	
 	public Vector3 hitPos;
 	public Vector3 hitNormal;
-	public Vector3 suspensionForce;
-	public Vector3 wheelVelocity;
+	public Vector3 startRot;
+	public float hitHeight;
 	private int _lastSkid;
 	private float _minLength;
 	private float _maxLength;
@@ -49,11 +51,10 @@ public class Suspension : MonoBehaviour
 	private float _springVelocity;
 	private float _springForce;
 	private float _damperForce;
-	private Vector3 _startRot;
 
 	private void Start()
 	{
-		_startRot = transform.localRotation.eulerAngles;
+		startRot = transform.localRotation.eulerAngles;
 	}
 
 	private void LateUpdate()
@@ -72,20 +73,26 @@ public class Suspension : MonoBehaviour
 		}
 	}
 
+	private void OnDrawGizmos()
+	{
+		if (isGrounded)
+		{
+			Gizmos.color = Color.green;
+		}
+
+		if (!isGrounded)
+		{
+			Gizmos.color = Color.red;
+		}
+		
+		Gizmos.DrawSphere(hitPos, 0.1f);
+		Gizmos.DrawRay(gameObject.transform.position, -transform.up * (_lastLength + suspensionLength));
+	}
+
 	private void FixedUpdate()
 	{
 		ApplyingSuspension();
 		WheelRotationCalculation();
-		
-		
-		
-		if (isGrounded)
-			Debug.DrawRay(transform.position, -gameObject.transform.up * (_maxLength + suspensionLength), Color.green);
-		
-		if (!isGrounded)
-			Debug.DrawRay(transform.position, -gameObject.transform.up * (_maxLength + suspensionLength), Color.red);
-		
-		Debug.DrawRay(currentWheel.gameObject.transform.position, currentWheel.transform.right * 25f, Color.blue);
 	}
 
 	private void ApplyingSuspension()
@@ -93,30 +100,26 @@ public class Suspension : MonoBehaviour
 		_maxLength = restLength + springTravel;
 		_minLength = restLength - springTravel;
 
-		if (Physics.CapsuleCast(transform.position, transform.position, wheelRadius, -transform.up, out var hit, _maxLength + suspensionLength, collisionDetectionLayer))
+		if (Physics.SphereCast(transform.position, wheelRadius, -transform.up, out var hit, _maxLength + suspensionLength, collisionDetectionLayer))
 		{
 			CalculateSuspension(hit);
+			FrictionAndDrift();
 			
 			wheelVelocity = transform.InverseTransformDirection(rb.GetPointVelocity(hit.point));
 			
 			var pointVelocity = XZVector(rb.GetPointVelocity(hitPos));
-			var lateralVelocity = Vector3.Project(pointVelocity, transform.right);
-			var longitudinalVelocity = Vector3.Project(pointVelocity, transform.forward);
+			var angularVelocity = currentWheel.GetComponent<Rigidbody>().angularVelocity;
 			
-			print(longitudinalVelocity);
+			longitudinalAngularVelocity = Vector3.Project(angularVelocity, car.transform.forward);
 
-			var frictionForce = lateralVelocity * (rb.mass * grip);
-            
 			if (isGrounded)
 			{
-				rb.AddForceAtPosition(-frictionForce, hitPos);
-				
 				if (hit.rigidbody != null)
 				{
 					hit.rigidbody.AddForceAtPosition(-suspensionForce, hitPos);
 				}
 			}
-
+			
 			rb.AddForceAtPosition(suspensionForce, hitPos);
 		}
 
@@ -124,6 +127,28 @@ public class Suspension : MonoBehaviour
 		{
 			isGrounded = false;
 			hitHeight = suspensionLength + restHeight;
+		}
+	}
+
+	private void FrictionAndDrift()
+	{
+		var pointVelocity = XZVector(rb.GetPointVelocity(hitPos));
+		
+		var lateralVelocity = Vector3.Project(pointVelocity, transform.right);
+		
+		var frictionForce = lateralVelocity * (rb.mass * grip);
+		
+		Vector3 localVel = transform.InverseTransformDirection(pointVelocity);
+
+		if (localVel.x <= -25f || localVel.x >= 25f)
+		{
+			rb.AddForceAtPosition(-transform.up * driftBalance, gameObject.transform.position);
+			print("Drift");
+		}
+
+		if (isGrounded)
+		{
+			rb.AddForceAtPosition(-transform.right * (localVel.x * grip), hitPos);
 		}
 	}
 
@@ -151,14 +176,17 @@ public class Suspension : MonoBehaviour
 		{
 			wheelAngle = Mathf.Lerp(wheelAngle, steeringAngle, steerSpeed * Time.deltaTime);
 		}
-
-		var transformLocalRotation = transform.localRotation;
-
-		Vector3 wheelRot = new Vector3(gameObject.transform.localRotation.x, wheelAngle, transform.gameObject.transform.localRotation.z);
-
-		gameObject.transform.localRotation = Quaternion.Euler(_startRot + wheelRot);
 		
-		transformLocalRotation.eulerAngles = _startRot + wheelRot;
+		Vector3 wheelRot = transform.localRotation.eulerAngles;
+		wheelRot.y = wheelAngle;
+		
+		Quaternion currentWheelRot = currentWheel.transform.localRotation;
+		
+		currentWheelRot.y = 0f;
+		currentWheelRot.z = 0f;
+
+		gameObject.transform.localRotation = Quaternion.Euler(wheelRot + startRot);
+		currentWheel.gameObject.transform.localRotation = currentWheelRot;
 	}
 
 	private static Vector3 XZVector(Vector3 vector3)

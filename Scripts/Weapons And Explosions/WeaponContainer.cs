@@ -5,6 +5,8 @@ public class WeaponContainer : MonoBehaviour
 {
     [Header("Weapon Switching")]
     public int currentSelected;
+    public int lateSelected;
+    public int lastSelected;
 
     public float throwForce;
     
@@ -24,8 +26,7 @@ public class WeaponContainer : MonoBehaviour
 
     public void FixedUpdate()
     {
-        ChangeInput();
-        PickUpInput();
+        ContainerInput();
 
         if (currentSelected > weapons.Length - 1)
         {
@@ -35,6 +36,12 @@ public class WeaponContainer : MonoBehaviour
         if (currentSelected < 0)
         {
             currentSelected = weapons.Length - 1;
+        }
+
+        if (currentSelected != lateSelected)
+        {
+            lastSelected = lateSelected;
+            lateSelected = currentSelected;
         }
 
         foreach (var everyWeapon in weapons)
@@ -66,7 +73,7 @@ public class WeaponContainer : MonoBehaviour
         }
     }
 
-    private void ChangeInput()
+    private void ContainerInput()
     {
         currentSelected += (int) Input.mouseScrollDelta.y;
 
@@ -77,16 +84,18 @@ public class WeaponContainer : MonoBehaviour
                 currentSelected = i;
             }
         }
-    }
-
-    private void PickUpInput()
-    {
+        
         if (Input.GetKeyDown(InputManager.Instance.pickupWeaponKey))
         {
             if (Physics.SphereCast(transform.position, pickUpRadius, transform.forward, out var hit, pickUpDistance, pickUpMask, QueryTriggerInteraction.UseGlobal))
             {
                 hit.transform.gameObject.GetComponent<PickUpWeapon>().PickUp();
             }
+        }
+        
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            currentSelected = lastSelected;
         }
     }
 

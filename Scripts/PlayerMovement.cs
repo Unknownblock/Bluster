@@ -137,11 +137,8 @@ public class PlayerMovement : MonoBehaviour
 		
 		velocity = rb.velocity; //Velocity Equals Player Rigidbody Velocity 
 
-		//Awake The Rigidbody If Grounded
-		if (isGrounded)
-		{
-			rb.WakeUp();
-		}
+		//Always Waking Up The Rigidbody
+		rb.sleepThreshold = 0f;
 		
 		moveDirection = playerInput.moveDirection; //Setting PlayerMovements Move Direction
 	}
@@ -392,6 +389,7 @@ public class PlayerMovement : MonoBehaviour
 	{
 		int layer = other.gameObject.layer;
 		Vector3 normal = other.contacts[0].normal;
+		
 		if (groundMask == (groundMask | (1 << layer)) && IsFloor(normal))
 		{
 			MoveCamera.Instance.BobOnce(new Vector3(0f, fallSpeed, 0f), offSetPos);
@@ -409,7 +407,7 @@ public class PlayerMovement : MonoBehaviour
 			
 			if (fallSpeed <= fallDamageVel)
 			{
-				playerHealth.Damage((int)(0f - fallSpeed), other.gameObject);
+				playerHealth.Damage((int)-fallSpeed, other.gameObject);
 			}
 		}
 		
@@ -431,10 +429,12 @@ public class PlayerMovement : MonoBehaviour
 	private void OnCollisionStay(Collision other)
 	{
 		int layer = other.gameObject.layer;
+		
 		if ((groundMask.value & (1 << layer)) != 1 << layer)
 		{
 			return;
 		}
+		
 		for (int i = 0; i < other.contactCount; i++)
 		{
 			Vector3 normal = other.contacts[i].normal;

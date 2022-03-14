@@ -3,6 +3,7 @@ using UnityEngine;
 public class BuildingSystem : MonoBehaviour
 {
     public int amountOfBuilds;
+    public float rotateSpeed;
     public float buildRange;
     public float buildRadius;
     public float snapRadius;
@@ -18,6 +19,7 @@ public class BuildingSystem : MonoBehaviour
         BuildPlacement();
         BuildInput();
         Build();
+        RotatingTheBuild();
     }
 
     private void BuildPlacement()
@@ -96,6 +98,23 @@ public class BuildingSystem : MonoBehaviour
             currentBuildTarget = Instantiate(buildTarget, hitPoint, Quaternion.identity);
             currentBuildTarget.buildState = BuildTarget.BuildState.IsNotPlaced;
             amountOfBuilds--;
+        }
+    }
+
+    private void RotatingTheBuild()
+    {
+        var playerInput = PlayerInput.Instance;
+        
+        if (Input.GetKey(KeyCode.R))
+        {
+            playerInput.isLocked = true;
+            var addRotation = new Vector3(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"), 0f);
+            currentBuildTarget.transform.localRotation *= Quaternion.Euler(addRotation);
+        }
+
+        else
+        {
+            playerInput.isLocked = false;
         }
     }
 }

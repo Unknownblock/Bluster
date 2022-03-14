@@ -41,6 +41,9 @@ public class PlayerInput : MonoBehaviour
 	public Vector3 currentRotation;
 	public Vector3 targetRotation;
 	public Vector3 moveDirection;
+	
+	[Header("Bool Variables")] 
+	public bool isLocked;
 
 	public static PlayerInput Instance { get; private set; }
 
@@ -53,12 +56,16 @@ public class PlayerInput : MonoBehaviour
 	private void Update()
 	{
 		Tilt();
-		Look();
 		MyInput();
 		
 		//Weapon Camera Recoil
 		currentRotation = Vector3.Slerp(currentRotation, targetRotation, snappiness * Time.fixedDeltaTime);
 		targetRotation = Vector3.Lerp(targetRotation, Vector3.zero, returnSpeed * Time.deltaTime);
+		
+		if (!isLocked)
+		{
+			Look();
+		}
 	}
 
 	private void Tilt()
@@ -110,7 +117,7 @@ public class PlayerInput : MonoBehaviour
 		jumpInput = Input.GetKey(InputManager.Instance.jumpKey);
 		sprintInput = Input.GetKey(InputManager.Instance.sprintKey);
 		crouchInput = Input.GetKey(InputManager.Instance.crouchKey);
-		reloadInput = Input.GetKey(InputManager.Instance.reloadKey);
+		reloadInput = Input.GetKeyDown(InputManager.Instance.reloadKey);
 	}
 
 	private void Look()

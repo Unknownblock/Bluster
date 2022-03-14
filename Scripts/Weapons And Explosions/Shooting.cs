@@ -276,38 +276,41 @@ public class Shooting : MonoBehaviour
 
 	private IEnumerator Reload()
 	{
-		if (currentMagazineAmmo <= maxMagazineAmmo && currentAmmo > 0)
+		if (!isReloading)
 		{
-			//Weapon Current State By Reload Being Started
-			isReloading = true;
-			
-			canShoot = false;
-			
-			//Weapon Reload Motion
-			gun.Reload(reloadTime, spinAmount);
-			
-			//Reload Sound
-			reloadSound.Play();
-			
-			
-			yield return new WaitForSeconds(reloadTime);
-			
-			//Weapon Current State By Reload Being Finished
-			isReloading = false;
-			
-			canShoot = true;
-			
-			//Making The Current Ammo Less And Calculating The Amount
-			if (currentAmmo > maxMagazineAmmo)
+			if (currentMagazineAmmo < maxMagazineAmmo && currentAmmo > 0)
 			{
-				currentAmmo -= maxMagazineAmmo - currentMagazineAmmo;
-				currentMagazineAmmo = maxMagazineAmmo;
-			}
-			
-			else if (currentAmmo <= maxMagazineAmmo && currentAmmo > 0)
-			{
-				currentMagazineAmmo = currentAmmo;
-				currentAmmo = 0;
+				//Weapon Current State By Reload Being Started
+				isReloading = true;
+
+				canShoot = false;
+
+				//Weapon Reload Motion
+				gun.Reload(reloadTime, spinAmount);
+
+				//Reload Sound
+				reloadSound.Play();
+
+
+				yield return new WaitForSeconds(reloadTime);
+
+				//Weapon Current State By Reload Being Finished
+				isReloading = false;
+
+				canShoot = true;
+
+				//Making The Current Ammo Less And Calculating The Amount
+				if (currentAmmo > maxMagazineAmmo)
+				{
+					currentAmmo -= maxMagazineAmmo - currentMagazineAmmo;
+					currentMagazineAmmo = maxMagazineAmmo;
+				}
+
+				else if (currentAmmo <= maxMagazineAmmo && currentAmmo > 0)
+				{
+					currentMagazineAmmo = currentAmmo;
+					currentAmmo = 0;
+				}
 			}
 		}
 	}

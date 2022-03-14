@@ -94,6 +94,16 @@ public class Suspension : MonoBehaviour
 	{
 		ApplyingSuspension();
 		WheelRotationCalculation();
+
+		if (currentWheel.GetComponent<Rigidbody>() != null)
+		{
+			wheelRigidbody = currentWheel.GetComponent<Rigidbody>();
+		}
+		
+		else if (currentWheel.GetChild(0).GetComponent<Rigidbody>() != null)
+		{
+			wheelRigidbody = currentWheel.GetChild(0).GetComponent<Rigidbody>();
+		}
 	}
 
 	private void ApplyingSuspension()

@@ -221,16 +221,13 @@ public class PlayerMovement : MonoBehaviour
 		//Setting The Rigidbody Drag
 		if (isGrounded)
 		{
+			rb.drag = airDrag;
+			
 			if (isSliding)
 				rb.AddForce(new Vector3(-velocity.x, 0, -velocity.z) * slideDrag);
 
 			if (!isSliding)
 				rb.AddForce(new Vector3(-velocity.x, 0, -velocity.z) * groundDrag);
-		}
-
-		else
-		{
-			rb.drag = airDrag;
 		}
 	}
 

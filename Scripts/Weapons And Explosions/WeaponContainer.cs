@@ -12,7 +12,7 @@ public class WeaponContainer : MonoBehaviour
     
     public Weapon[] weapons;
 
-    [Header("Weapon Picking Up")] public LayerMask pickUpMask;
+    [Header("Weapon Picking Up")]
     public float pickUpDistance;
     public float pickUpRadius;
 
@@ -87,9 +87,12 @@ public class WeaponContainer : MonoBehaviour
         
         if (Input.GetKeyDown(InputManager.Instance.pickupWeaponKey))
         {
-            if (Physics.SphereCast(transform.position, pickUpRadius, transform.forward, out var hit, pickUpDistance, pickUpMask, QueryTriggerInteraction.UseGlobal))
+            if (Physics.SphereCast(transform.position, pickUpRadius, transform.forward, out var hit, pickUpDistance))
             {
-                hit.transform.gameObject.GetComponent<PickUpWeapon>().PickUp();
+                if (hit.transform.gameObject.GetComponent<PickUpWeapon>() != null)
+                {
+                    hit.transform.gameObject.GetComponent<PickUpWeapon>().PickUp();
+                }
             }
         }
         

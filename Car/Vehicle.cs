@@ -9,6 +9,8 @@ public class Vehicle : MonoBehaviour
     public float moveSpeed;
     public float engineForce;
 
+    public float carDrag;
+
     public Suspension[] wheels;
 
     [Header("Information Variables")] 
@@ -47,6 +49,8 @@ public class Vehicle : MonoBehaviour
     private void Movement()
     {
         Steering();
+        
+        _rb.AddForce(new Vector3(-_rb.velocity.x, 0, -_rb.velocity.z) * carDrag);
 
         if (!isGrounded)
         {
@@ -63,20 +67,14 @@ public class Vehicle : MonoBehaviour
             
             moveSpeed = wheelVelocity.z;
 
-            if (everyWheel.isGrounded)
+            if (everyWheel.isGrounded && _rb.velocity.magnitude < speedLimit)
             {
-                everyWheel.wheelRigidbody.AddTorque(everyWheel.currentWheel.right * (vehicleWheelVelocity.z * 2f));
-                _rb.AddForceAtPosition(everyWheel.transform.forward * (moveSpeed - 1f), everyWheel.hitPos);
+                _rb.AddForceAtPosition(everyWheel.transform.forward.normalized * (moveSpeed - 1f), everyWheel.hitPos);
             }
             
             if (everyWheel.isMotorized)
             {
                 everyWheel.wheelRigidbody.AddTorque(everyWheel.currentWheel.right * (engineForce * verticalMovement));
-            }
-
-            if (_rb.velocity.magnitude >= speedLimit)
-            {
-                _rb.AddForce(-_rb.velocity);
             }
         }
     }

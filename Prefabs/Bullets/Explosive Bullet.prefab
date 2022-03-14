@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8760770950385709210}
   - component: {fileID: 5855714839249226192}
   - component: {fileID: 6946265580174060868}
-  m_Layer: 8
+  m_Layer: 7
   m_Name: default
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: 3954918080453348810}
   - component: {fileID: 1149000045695643682}
   - component: {fileID: 5227696278022175901}
-  m_Layer: 8
+  m_Layer: 7
   m_Name: Explosive Bullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}

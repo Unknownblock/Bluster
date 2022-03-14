@@ -16,8 +16,8 @@ public class MoveCamera : MonoBehaviour
 	public Vector3 desiredBob;
 	public float bobSpeed = 15f;
 	public float gettingBackSpeed = 0.5f;
-	public float minSomething = -3;
-	public float maxSomething = 3;
+	public float minBob = -3;
+	public float maxBob = 3;
 	public float directionMultiplier = 0.15f;
 
 	[Header("FOV")]
@@ -50,7 +50,7 @@ public class MoveCamera : MonoBehaviour
 	public void BobOnce(Vector3 bobDirection, float bobMultiplier)
 	{
 		//Bobbing The Camera Once
-		desiredBob = ClampVector(bobDirection * directionMultiplier, minSomething, maxSomething) * bobMultiplier;
+		desiredBob = ClampVector(bobDirection * directionMultiplier, minBob, maxBob) * bobMultiplier;
 	}
 
 	private void UpdateBob()

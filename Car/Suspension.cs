@@ -1,8 +1,13 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Suspension : MonoBehaviour
 {
+	[Header("Drift")]
+	public float driftGrip;
+	public float normalGrip;
+	public float driftTraction;
+	public float normalTraction;
+	
 	[Header("Important Variables")] 
 	public float grip;
 	public float suspensionLength;
@@ -39,7 +44,6 @@ public class Suspension : MonoBehaviour
 
 	[Header("Don't Care About")]
 	public Vector3 suspensionForce;
-	public Vector3 wheelVelocity;	
 	public Vector3 hitPos;
 	public Vector3 hitNormal;
 	public float hitHeight;
@@ -53,8 +57,10 @@ public class Suspension : MonoBehaviour
 	private float _springForce;
 	private float _damperForce;
 
-	private void Start()
+	private void Awake()
 	{
+		InitWheels();
+		
 		startRot = transform.localRotation.eulerAngles;
 	}
 
@@ -74,6 +80,18 @@ public class Suspension : MonoBehaviour
 		}
 	}
 
+	public void Drift()
+	{
+		grip = driftGrip;
+		traction = driftTraction;
+	}
+
+	public void EndDrift()
+	{
+		grip = normalGrip;
+		traction = normalTraction;
+	}
+
 	private void OnDrawGizmos()
 	{
 		if (isGrounded)
@@ -90,10 +108,11 @@ public class Suspension : MonoBehaviour
 		Gizmos.DrawRay(gameObject.transform.position, -transform.up * (_lastLength + suspensionLength));
 	}
 
-	private void FixedUpdate()
+	private void Update()
 	{
 		ApplyingSuspension();
 		WheelRotationCalculation();
+		MoveWheels();
 
 		if (currentWheel.GetComponent<Rigidbody>() != null)
 		{
@@ -111,13 +130,11 @@ public class Suspension : MonoBehaviour
 		_maxLength = restLength + springTravel;
 		_minLength = restLength - springTravel;
 
-		if (Physics.CapsuleCast(transform.position, transform.position, wheelRadius, -transform.up, out var hit, _maxLength + suspensionLength, groundLayer))
+		if (Physics.CapsuleCast(transform.position, transform.position, wheelRadius * 2f, -transform.up, out var hit, _maxLength + suspensionLength, groundLayer))
 		{
 			CalculateSuspension(hit);
 			FrictionAndDrift();
-			
-			wheelVelocity = transform.InverseTransformDirection(vehicleRb.GetPointVelocity(hit.point));
-			
+
 			if (isGrounded)
 			{
 				if (hit.rigidbody != null)
@@ -150,6 +167,23 @@ public class Suspension : MonoBehaviour
 		{
 			vehicleRb.AddForceAtPosition(-transform.right * (localVel.x * grip), hitPos);
 		}
+	}
+
+	private void InitWheels()
+	{
+		if (currentWheel == null)
+		{
+			currentWheel = Instantiate(wheel).transform;
+			currentWheel.parent = transform;
+			currentWheel.name = currentWheel.parent.name + " Current Wheel";
+		}
+	}
+
+	private void MoveWheels()
+	{
+		var wantedWheelPos = transform.position + -gameObject.transform.up * hitHeight;
+		currentWheel.transform.position = wantedWheelPos;
+		currentWheel.localScale = Vector3.one * (wheelRadius * 2f);
 	}
 
 	private void CalculateSuspension(RaycastHit hit)

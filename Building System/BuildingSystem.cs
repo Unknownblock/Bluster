@@ -41,13 +41,14 @@ public class BuildingSystem : MonoBehaviour
                 {
                     if (hit.transform.GetComponent<BuildTarget>() != null && hit.transform.GetComponent<BuildTarget>().buildState == BuildTarget.BuildState.IsPlaced)
                     {
-                        foreach (var everySnapPos in hit.transform.GetComponent<BuildTarget>().snapPositions)
+                        foreach (var everySnapVector in hit.transform.GetComponent<BuildTarget>().snapVectors)
                         {
-                            var canSnap = Vector3.Distance(hit.transform.GetComponent<BuildTarget>().transform.position + everySnapPos, hitPoint) < snapRadius;
+                            var canSnap = Vector3.Distance(hit.transform.GetComponent<BuildTarget>().transform.position + everySnapVector.position, hitPoint) < snapRadius;
                             
                             if (canSnap)
                             {
-                                currentBuildTarget.transform.position = hit.transform.GetComponent<BuildTarget>().transform.position + everySnapPos;
+                                currentBuildTarget.transform.position = hit.transform.GetComponent<BuildTarget>().transform.position + everySnapVector.position;
+                                currentBuildTarget.transform.rotation = Quaternion.Euler(everySnapVector.rotation);
                             }
                         }
                     }

@@ -8,6 +8,7 @@ public class Vehicle : MonoBehaviour
     public float speedLimit;
     public float moveSpeed;
     public float engineForce;
+    public float breakForce;
 
     public float carDrag;
 
@@ -23,17 +24,12 @@ public class Vehicle : MonoBehaviour
 
     private Rigidbody _rb;
 
-    private void Awake()
-    {
-        InitWheels();
-    }
-
     private void Start()
     {
         _rb = GetComponent<Rigidbody>();
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         Movement();
         WheelManaging();
@@ -41,16 +37,13 @@ public class Vehicle : MonoBehaviour
         CheckGrounded();
     }
 
-    private void Update()
-    {
-        MoveWheels();
-    }
-
     private void Movement()
     {
         Steering();
         
-        _rb.AddForce(new Vector3(-_rb.velocity.x, 0, -_rb.velocity.z) * carDrag);
+        Vector3 localVelocity = transform.InverseTransformDirection(_rb.velocity);
+
+        _rb.AddForce(transform.forward * -localVelocity.z * carDrag);
 
         if (!isGrounded)
         {
@@ -62,6 +55,7 @@ public class Vehicle : MonoBehaviour
         {
             var pointVelocity = XZVector(_rb.GetPointVelocity(everyWheel.hitPos));
             
+            Vector3 wheelAngularVelocity = everyWheel.transform.InverseTransformDirection(everyWheel.wheelRigidbody.angularVelocity);
             Vector3 wheelVelocity = everyWheel.transform.InverseTransformDirection(everyWheel.wheelRigidbody.velocity);
             Vector3 vehicleWheelVelocity = everyWheel.transform.InverseTransformDirection(pointVelocity);
             
@@ -69,12 +63,27 @@ public class Vehicle : MonoBehaviour
 
             if (everyWheel.isGrounded && _rb.velocity.magnitude < speedLimit)
             {
-                _rb.AddForceAtPosition(everyWheel.transform.forward.normalized * (moveSpeed - 1f), everyWheel.hitPos);
+                _rb.AddForceAtPosition(everyWheel.transform.forward * moveSpeed, everyWheel.hitPos);
             }
             
             if (everyWheel.isMotorized)
             {
                 everyWheel.wheelRigidbody.AddTorque(everyWheel.currentWheel.right * (engineForce * verticalMovement));
+            }
+
+            if (everyWheel.isBreakable && everyWheel.isGrounded && isBreaking)
+            {
+                Vector3 wheelLocalVelocity = transform.InverseTransformDirection(_rb.GetPointVelocity(everyWheel.transform.position));
+
+                _rb.AddForce(everyWheel.transform.forward * -wheelLocalVelocity.z * breakForce);
+                everyWheel.wheelRigidbody.AddTorque(everyWheel.currentWheel.right * (-wheelAngularVelocity.x));
+                
+                everyWheel.Drift();
+            }
+
+            else
+            {
+                everyWheel.EndDrift();
             }
         }
     }
@@ -157,32 +166,9 @@ public class Vehicle : MonoBehaviour
         }
     }
 
-    private void InitWheels()
-    {
-        foreach (Suspension everyWheel in wheels)
-        {
-            if (everyWheel.currentWheel == null)
-            {
-                everyWheel.currentWheel = Instantiate(everyWheel.wheel).transform;
-                everyWheel.currentWheel.parent = everyWheel.transform;
-                everyWheel.currentWheel.name = everyWheel.currentWheel.parent.name + " Current Wheel";
-            }
-        }
-    }
-
     private Vector3 XZVector(Vector3 vector3)
     {
         return new Vector3(vector3.x, 0f, vector3.z);
-    }
-
-    private void MoveWheels()
-    {
-        foreach (var everyWheel in wheels)
-        {
-            var wantedWheelPos = everyWheel.transform.position + -everyWheel.gameObject.transform.up * (everyWheel.hitHeight + -everyWheel.wheelRadius);
-            everyWheel.currentWheel.transform.position = wantedWheelPos;
-            everyWheel.currentWheel.localScale = Vector3.one * (everyWheel.wheelRadius * 2f);
-        }
     }
 
     private void CheckGrounded()

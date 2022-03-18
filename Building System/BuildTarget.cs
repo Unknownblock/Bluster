@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -12,7 +13,7 @@ public class BuildTarget : MonoBehaviour
     public bool isSelected;
     public bool isFailed;
 
-    public RotationPosition[] SnapVectors;
+    public RotationPosition[] snapVectors;
     public List<GameObject> connectedBuilds;
     
     public Material buildMaterial;
@@ -75,7 +76,7 @@ public class BuildTarget : MonoBehaviour
         }
     }
 
-    private void OnCollisionExit(Collision other)
+    private void OnCollisionExit()
     {
         if (buildState == BuildState.IsPlaced)
         {
@@ -87,8 +88,8 @@ public class BuildTarget : MonoBehaviour
     }
 }
 
-[SerializeField]
-public abstract class RotationPosition
+[Serializable]
+public class RotationPosition
 {
     public Vector3 position;
     public Vector3 rotation;

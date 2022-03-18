@@ -1,4 +1,5 @@
 // Skidmarks
+
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -69,10 +70,10 @@ public class Skidmarks : MonoBehaviour
 	protected void Awake()
 	{
 		Instance = this;
-		if (base.transform.position != Vector3.zero)
+		if (transform.position != Vector3.zero)
 		{
-			base.transform.position = Vector3.zero;
-			base.transform.rotation = Quaternion.identity;
+			transform.position = Vector3.zero;
+			transform.rotation = Quaternion.identity;
 		}
 	}
 
@@ -87,13 +88,13 @@ public class Skidmarks : MonoBehaviour
 		mr = GetComponent<MeshRenderer>();
 		if (mr == null)
 		{
-			mr = base.gameObject.AddComponent<MeshRenderer>();
+			mr = gameObject.AddComponent<MeshRenderer>();
 		}
 		marksMesh = new Mesh();
 		marksMesh.MarkDynamic();
 		if (mf == null)
 		{
-			mf = base.gameObject.AddComponent<MeshFilter>();
+			mf = gameObject.AddComponent<MeshFilter>();
 		}
 		mf.sharedMesh = marksMesh;
 		vertices = new Vector3[4096];
@@ -165,7 +166,7 @@ public class Skidmarks : MonoBehaviour
 				markSection = null;
 			}
 		}
-		colour.a = (byte)((float)(int)colour.a * 1f);
+		colour.a = (byte)(colour.a * 1f);
 		MarkSection markSection2 = skidmarks[markIndex];
 		markSection2.Pos = vector;
 		markSection2.Normal = normal;

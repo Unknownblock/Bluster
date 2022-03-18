@@ -1,6 +1,6 @@
+using System;
 using TMPro;
 using UnityEngine;
-using System;
 
 public class DamagePopUp : MonoBehaviour
 {

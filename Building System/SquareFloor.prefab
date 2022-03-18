@@ -9,10 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3882481884397548439}
-  - component: {fileID: 3882481884397548438}
-  - component: {fileID: 3882481884397548441}
-  - component: {fileID: 3882481884397548440}
+  - component: {fileID: 7645814774767923576}
+  - component: {fileID: 2783412766012946820}
   - component: {fileID: 3882481884397548443}
+  - component: {fileID: 3882481884397548440}
   m_Layer: 12
   m_Name: SquareFloor
   m_TagString: Untagged
@@ -28,13 +28,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3882481884397548442}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -2.2208574, y: 1, z: -4.803815}
   m_LocalScale: {x: 4, y: 1, z: 4}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &3882481884397548438
+--- !u!33 &7645814774767923576
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,7 +42,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3882481884397548442}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &3882481884397548441
+--- !u!23 &2783412766012946820
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1a54b4e9ea3350241802503009389498, type: 2}
+  - {fileID: 2100000, guid: c24136f16b40e8d4eb6bc29c40800df0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -83,19 +83,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &3882481884397548440
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3882481884397548442}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &3882481884397548443
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,13 +99,30 @@ MonoBehaviour:
   placedLayerMask: PlacedBuild
   isSelected: 1
   isFailed: 0
-  snapPositions:
-  - {x: 4, y: 0, z: 0}
-  - {x: -4, y: 0, z: 0}
-  - {x: 0, y: 0, z: 4}
-  - {x: 0, y: 0, z: -4}
+  snapVectors:
+  - position: {x: -4, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+  - position: {x: 4, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 0}
+  - position: {x: 0, y: 0, z: 4}
+    rotation: {x: 0, y: 0, z: 0}
+  - position: {x: 0, y: 0, z: -4}
+    rotation: {x: 0, y: 0, z: 0}
   connectedBuilds: []
   buildMaterial: {fileID: 2100000, guid: 1a54b4e9ea3350241802503009389498, type: 2}
   failMaterial: {fileID: 2100000, guid: cecae7e3ec149954aa071ceb9357fb3e, type: 2}
   placedMaterial: {fileID: 2100000, guid: c24136f16b40e8d4eb6bc29c40800df0, type: 2}
   distanceFromBuild: 4
+--- !u!65 &3882481884397548440
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3882481884397548442}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

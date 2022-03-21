@@ -15,9 +15,11 @@ public class DamagePopUp : MonoBehaviour
 
 		public int minDamage;
 	}
-	
+
 	public DamagePopUpColor[] damagePopUpColor;
 
+	public float size;
+	
 	public Color32 textColor;
 
 	public float disAppearTime;
@@ -46,6 +48,11 @@ public class DamagePopUp : MonoBehaviour
 	{
 		ColorCheck();
 		Fade();
+		
+		var distance = Vector3.Distance(gameObject.transform.position, PlayerMovement.Instance.transform.position);
+		var wantedSize = new Vector3(distance / size, distance / size, distance / size);
+		transform.localScale = wantedSize;
+		
 		textColor.a = (byte) alpha; //Set The Text Colors Opacity Or Alpha
 		textMesh.color = textColor; //Set The Color Of Text Mesh To The Wanted Color
 		transform.LookAt(2f * transform.position - playerTransform.position); //Look At Player

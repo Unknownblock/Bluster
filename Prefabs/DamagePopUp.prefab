@@ -208,6 +208,7 @@ MonoBehaviour:
     size: 4
     maxDamage: 100
     minDamage: 75
+  size: 10
   textColor:
     serializedVersion: 2
     rgba: 4294967295

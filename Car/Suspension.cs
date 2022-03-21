@@ -2,7 +2,7 @@
 
 public class Suspension : MonoBehaviour
 {
-	[Header("Drift")]
+	[Header("Drift")] public float driftFriction;
 	public float driftGrip;
 	public float normalGrip;
 	public float driftTraction;
@@ -43,11 +43,12 @@ public class Suspension : MonoBehaviour
 	public bool isGrounded;
 
 	[Header("Don't Care About")]
+	public Vector3 startRot;
+	public Vector3 normalFrictionForce;
 	public Vector3 suspensionForce;
 	public Vector3 hitPos;
 	public Vector3 hitNormal;
 	public float hitHeight;
-	public Vector3 startRot;
 	private int _lastSkid;
 	private float _minLength;
 	private float _maxLength;
@@ -157,15 +158,18 @@ public class Suspension : MonoBehaviour
 	{
 		var pointVelocity = XZVector(vehicleRb.GetPointVelocity(hitPos));
 		
-		var lateralVelocity = Vector3.Project(pointVelocity, transform.right);
+		Vector3 localVel = transform.InverseTransformDirection(pointVelocity);
 		
+		var lateralVelocity = -transform.right * localVel.x;
+		
+		normalFrictionForce = lateralVelocity * (vehicleRb.mass * normalGrip);
 		var frictionForce = lateralVelocity * (vehicleRb.mass * grip);
 		
-		Vector3 localVel = transform.InverseTransformDirection(pointVelocity);
+		print(frictionForce);
 
 		if (isGrounded)
 		{
-			vehicleRb.AddForceAtPosition(-transform.right * (localVel.x * grip), hitPos);
+			vehicleRb.AddForceAtPosition(frictionForce, hitPos);
 		}
 	}
 

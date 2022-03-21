@@ -1,9 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Inventory : MonoBehaviour, IPointerDownHandler
 {
+    public GameObject pointerClick;
+    
     [Header("UI And Looks")]
     public Vector2 gap;
     public float slotSize;
@@ -122,30 +125,39 @@ public class Inventory : MonoBehaviour, IPointerDownHandler
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        Slot slot = eventData.pointerPressRaycast.gameObject.GetComponent<Slot>();
+
+        pointerClick = eventData.pointerPressRaycast.gameObject;
+
+        if (slot != null)
+        {
+            print(slot);
+        }
+            
+        if (eventData.pointerPressRaycast.gameObject == null || slot == null)
+        {
+            print("Null");
+        }
+
         var slots = inventorySlots.ToArray();
 
         foreach (var everySlot in slots)
         {
-            Slot slot = eventData.pointerPressRaycast.gameObject.GetComponent<Slot>();
-            
             if (eventData.pointerPressRaycast.gameObject == everySlot.gameObject)
             {
                 if (selectedItem == null && slot.currentSlotItem != null && slot != null)
                 {
                     DragItem(slot);
                 }
-                
+
                 else if (selectedItem != null && slot.currentSlotItem == null && slot != null)
                 {
                     PutItem(slot);
                 }
-            }
-            
-            else if (selectedItem != null  && eventData.pointerPressRaycast.gameObject != everySlot.gameObject)
-            {
-                if (selectedItem != null && slot.currentSlotItem == null && slot != null)
+
+                if (selectedItem != null && slot == null)
                 {
-                    print("Drop Item");
+                    print("Drop");
                 }
             }
         }
@@ -154,6 +166,7 @@ public class Inventory : MonoBehaviour, IPointerDownHandler
     private void DragItem(Slot slot)
     {
         selectedItem = slot.currentSlotItem;
+        selectedItem.GetComponent<Image>().raycastTarget = false;
         slot.currentSlotItem.itemState = Item.ItemState.GettingGrabbed;
         slot.currentSlotItem = null;
         print("Getting Dragged");
@@ -162,6 +175,7 @@ public class Inventory : MonoBehaviour, IPointerDownHandler
     private void PutItem(Slot slot)
     {
         slot.currentSlotItem = selectedItem;
+        selectedItem.GetComponent<Image>().raycastTarget = true;
         slot.currentSlotItem.itemState = Item.ItemState.Static;
         selectedItem = null;
         print("Static");

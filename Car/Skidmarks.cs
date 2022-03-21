@@ -23,23 +23,11 @@ public class Skidmarks : MonoBehaviour
 	}
 
 	[SerializeField]
-	private Material skidmarksMaterial;
-
-	private const int MAX_MARKS = 1024;
-
-	private const float MARK_WIDTH = 0.25f;
-
-	private const float GROUND_OFFSET = 0.02f;
-
-	private const float MIN_DISTANCE = 0.25f;
-
-	private const float MIN_SQR_DISTANCE = 0.0625f;
-
-	private const float MAX_OPACITY = 1f;
+	private Material skidMarksMaterial;
 
 	private int markIndex;
 
-	private MarkSection[] skidmarks;
+	private MarkSection[] skidMarks;
 
 	private Mesh marksMesh;
 
@@ -79,10 +67,10 @@ public class Skidmarks : MonoBehaviour
 
 	protected void Start()
 	{
-		skidmarks = new MarkSection[1024];
+		skidMarks = new MarkSection[1024];
 		for (int i = 0; i < 1024; i++)
 		{
-			skidmarks[i] = new MarkSection();
+			skidMarks[i] = new MarkSection();
 		}
 		mf = GetComponent<MeshFilter>();
 		mr = GetComponent<MeshRenderer>();
@@ -105,7 +93,7 @@ public class Skidmarks : MonoBehaviour
 		triangles = new int[6144];
 		mr.shadowCastingMode = ShadowCastingMode.Off;
 		mr.receiveShadows = false;
-		mr.material = skidmarksMaterial;
+		mr.material = skidMarksMaterial;
 		mr.lightProbeUsage = LightProbeUsage.Off;
 	}
 
@@ -143,7 +131,7 @@ public class Skidmarks : MonoBehaviour
 		return AddSkidMark(pos, normal, black, lastIndex);
 	}
 
-	public int AddSkidMark(Vector3 pos, Vector3 normal, Color32 colour, int lastIndex)
+	private int AddSkidMark(Vector3 pos, Vector3 normal, Color32 colour, int lastIndex)
 	{
 		if (colour.a == 0)
 		{
@@ -154,7 +142,7 @@ public class Skidmarks : MonoBehaviour
 		Vector3 vector = pos + normal * 0.02f;
 		if (lastIndex != -1)
 		{
-			markSection = skidmarks[lastIndex];
+			markSection = skidMarks[lastIndex];
 			lhs = vector - markSection.Pos;
 			if (lhs.sqrMagnitude < 0.0625f)
 			{
@@ -167,7 +155,7 @@ public class Skidmarks : MonoBehaviour
 			}
 		}
 		colour.a = (byte)(colour.a * 1f);
-		MarkSection markSection2 = skidmarks[markIndex];
+		MarkSection markSection2 = skidMarks[markIndex];
 		markSection2.Pos = vector;
 		markSection2.Normal = normal;
 		markSection2.Colour = colour;
@@ -175,28 +163,30 @@ public class Skidmarks : MonoBehaviour
 		if (markSection != null)
 		{
 			Vector3 normalized = Vector3.Cross(lhs, normal).normalized;
-			markSection2.Posl = markSection2.Pos + normalized * 0.25f * 0.5f;
-			markSection2.Posr = markSection2.Pos - normalized * 0.25f * 0.5f;
+			markSection2.Posl = markSection2.Pos + normalized * (0.25f * 0.5f);
+			markSection2.Posr = markSection2.Pos - normalized * (0.25f * 0.5f);
 			markSection2.Tangent = new Vector4(normalized.x, normalized.y, normalized.z, 1f);
 			if (markSection.LastIndex == -1)
 			{
 				markSection.Tangent = markSection2.Tangent;
-				markSection.Posl = markSection2.Pos + normalized * 0.25f * 0.5f;
-				markSection.Posr = markSection2.Pos - normalized * 0.25f * 0.5f;
+				markSection.Posl = markSection2.Pos + normalized * (0.25f * 0.5f);
+				markSection.Posr = markSection2.Pos - normalized * (0.25f * 0.5f);
 			}
 		}
-		UpdateSkidmarksMesh();
+		
+		UpdateSkidMarksMesh();
+		
 		int result = markIndex;
 		markIndex = ++markIndex % 1024;
 		return result;
 	}
 
-	private void UpdateSkidmarksMesh()
+	private void UpdateSkidMarksMesh()
 	{
-		MarkSection markSection = skidmarks[markIndex];
+		MarkSection markSection = skidMarks[markIndex];
 		if (markSection.LastIndex != -1)
 		{
-			MarkSection markSection2 = skidmarks[markSection.LastIndex];
+			MarkSection markSection2 = skidMarks[markSection.LastIndex];
 			vertices[markIndex * 4] = markSection2.Posl;
 			vertices[markIndex * 4 + 1] = markSection2.Posr;
 			vertices[markIndex * 4 + 2] = markSection.Posl;

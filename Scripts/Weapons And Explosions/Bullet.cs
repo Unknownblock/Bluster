@@ -35,15 +35,11 @@ public class Bullet : MonoBehaviour
 			otherRb.velocity = Vector3.zero; //If Hit Reset The Velocity
 			otherRb.AddForceAtPosition(force * transform.forward, gameObject.transform.position); //Add The Custom Force To The Rigidbody
 		}
+		GameObject hitBulletHole = Instantiate(bulletHole, new Vector3(other.contacts[0].point.x, (float) (other.contacts[0].point.y * 1.0025), other.contacts[0].point.z), Quaternion.LookRotation(-other.contacts[0].normal), other.transform); //Instantiate The Bullet Hole
+		GameObject hitImpactEffect = Instantiate(impactEffect, new Vector3(other.contacts[0].point.x, (float) (other.contacts[0].point.y * 1.0025), other.contacts[0].point.z), Quaternion.LookRotation(other.contacts[0].normal), other.transform); //Instantiate The Impact Effect
 		
-		else
-		{
-			GameObject hitBulletHole = Instantiate(bulletHole, new Vector3(other.contacts[0].point.x, (float) (other.contacts[0].point.y * 1.0025), other.contacts[0].point.z), Quaternion.LookRotation(-other.contacts[0].normal)); //Instantiate The Bullet Hole
-			Destroy(hitBulletHole, 5f); //Destroy The Instantiated Bullet Hole
-		}
-
-		GameObject hitImpactEffect = Instantiate(impactEffect, new Vector3(other.contacts[0].point.x, (float) (other.contacts[0].point.y * 1.0025), other.contacts[0].point.z), Quaternion.LookRotation(other.contacts[0].normal)); //Instantiate The Impact Effect
 		Destroy(hitImpactEffect, 1f); //Destroy The Instantiated Impact Effect
+		Destroy(hitBulletHole, 5f); //Destroy The Instantiated Bullet Hole
 		Destroy(gameObject); //Destroy The Bullet
 	}
 }

@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+using UnityEngine;
 
-public class Vehicle : MonoBehaviour
+public class AIVehicle : MonoBehaviour
 {
     [Header("Assignable Variables")] 
     public float rollingMovementForce;
@@ -9,10 +9,12 @@ public class Vehicle : MonoBehaviour
     public float moveSpeed;
     public float engineForce;
     public float breakForce;
-
+    
     public float carDrag;
 
     public Suspension[] wheels;
+
+    public GameObject targetGameObject;
 
     [Header("Information Variables")] 
     public bool isGrounded;
@@ -60,7 +62,7 @@ public class Vehicle : MonoBehaviour
             Vector3 vehicleWheelVelocity = everyWheel.transform.InverseTransformDirection(pointVelocity);
 
             moveSpeed = wheelVelocity.z;
-            
+
             if (everyWheel.isMotorized)
             {
                 everyWheel.wheelRigidbody.AddTorque(everyWheel.currentWheel.right * (engineForce * verticalMovement));
@@ -144,32 +146,21 @@ public class Vehicle : MonoBehaviour
 
     private void MyInput()
     {
-        horizontalMovement = 0f;
-        verticalMovement = 0f;
+        var distance = transform.position - targetGameObject.transform.position;
 
-        //Horizontal Movement
-        if (Input.GetKey(InputManager.Instance.rightKey))
-        {
-            horizontalMovement += 1f;
-        }
+        var input = transform.InverseTransformDirection(distance);
 
-        if (Input.GetKey(InputManager.Instance.leftKey))
+        if (input.z < 0f)
         {
-            horizontalMovement -= 1f;
-        }
-
-        //Vertical Movement
-        if (Input.GetKey(InputManager.Instance.forwardKey))
-        {
-            verticalMovement += 1f;
-        }
-
-        if (Input.GetKey(InputManager.Instance.backwardKey))
-        {
-            verticalMovement -= 1f;
+            horizontalMovement = -input.normalized.x;
+            verticalMovement = -input.normalized.z;
         }
         
-        isBreaking = Input.GetKey(InputManager.Instance.jumpKey);
+        if (input.z >= 0f)
+        {
+            horizontalMovement = -input.normalized.x;
+            verticalMovement = -input.normalized.z;
+        }
     }
 
     private void Steering()

@@ -6,7 +6,7 @@ public class Vehicle : MonoBehaviour
     public float rollingMovementForce;
     public float airMovementForce;
     public float speedLimit;
-    public float moveSpeed;
+    public Vector3 moveSpeed;
     public float engineForce;
     public float breakForce;
 
@@ -59,7 +59,7 @@ public class Vehicle : MonoBehaviour
             Vector3 wheelVelocity = everyWheel.transform.InverseTransformDirection(everyWheel.wheelRigidbody.velocity);
             Vector3 vehicleWheelVelocity = everyWheel.transform.InverseTransformDirection(pointVelocity);
 
-            moveSpeed = wheelVelocity.z;
+            moveSpeed = XZVector(everyWheel.wheelRigidbody.velocity);
             
             if (everyWheel.isMotorized)
             {
@@ -67,13 +67,13 @@ public class Vehicle : MonoBehaviour
                 
                 if (everyWheel.isGrounded && _rb.velocity.magnitude < speedLimit)
                 {
-                    _rb.AddForceAtPosition(everyWheel.transform.forward * moveSpeed, everyWheel.hitPos);
+                    _rb.AddForceAtPosition(moveSpeed, everyWheel.hitPos);
                 }
             }
 
             if (everyWheel.isGrounded)
             {
-                if (everyWheel.wheelRigidbody.angularVelocity.magnitude < engineForce / 10f && everyWheel.isBreakable)
+                if (everyWheel.isBreakable && isBreaking)
                 {
                     Vector3 wheelLocalVelocity = transform.InverseTransformDirection(_rb.GetPointVelocity(everyWheel.transform.position));
 

@@ -2,23 +2,25 @@ using UnityEngine;
 
 public class AIVehicle : MonoBehaviour
 {
-    [Header("Assignable Variables")] 
-    public float rollingMovementForce;
-    public float airMovementForce;
+    [Header("PathFinding")]
+    public float nodeDistance;
+    public int currentNode;
+    public Vector3 targetPosition;
+    public Transform targetObject;
+    public PathFinding pathFinding;
+    
+    [Header("Assignable Variables")]
     public float speedLimit;
-    public float moveSpeed;
+    public Vector3 moveSpeed;
     public float engineForce;
     public float breakForce;
-    
+
     public float carDrag;
 
     public Suspension[] wheels;
 
-    public GameObject targetGameObject;
-
     [Header("Information Variables")] 
     public bool isGrounded;
-    public bool isDetectingCollision;
     public bool isBreaking;
 
     public float horizontalMovement;
@@ -37,6 +39,47 @@ public class AIVehicle : MonoBehaviour
         WheelManaging();
         MyInput();
         CheckGrounded();
+        PathManaging();
+    }
+    
+    private void MyInput()
+    {
+        var distance = transform.position - targetPosition;
+
+        var input = transform.InverseTransformDirection(distance);
+
+        horizontalMovement = -input.normalized.x;
+        verticalMovement = -input.normalized.z;
+    }
+
+    private void PathManaging()
+    {
+        if (targetObject != null)
+        {
+            pathFinding.targetGameObject = targetObject;
+            var path = pathFinding.grid.path;
+
+            if (Vector3.Distance(transform.position, path[currentNode].worldPosition) > nodeDistance)
+            {
+                if (currentNode < path.Count - 1 && currentNode > 0)
+                {
+                    targetPosition = path[currentNode].worldPosition;
+                }
+            }
+
+            else
+            {
+                if (currentNode < path.Count - 1)
+                {
+                    currentNode++;
+                    
+                    if (currentNode < path.Count - 1 && currentNode > 0)
+                    {
+                        targetPosition = path[currentNode].worldPosition;
+                    }
+                }
+            }
+        }
     }
 
     private void Movement()
@@ -47,12 +90,6 @@ public class AIVehicle : MonoBehaviour
 
         _rb.AddForce(transform.forward * (-localVelocity.z * carDrag));
 
-        if (!isGrounded)
-        {
-            _rb.AddTorque(transform.forward * (airMovementForce * horizontalMovement));
-            _rb.AddTorque(gameObject.transform.right * (airMovementForce * verticalMovement));
-        }
-
         foreach (var everyWheel in wheels)
         {
             var pointVelocity = XZVector(_rb.GetPointVelocity(everyWheel.hitPos));
@@ -61,21 +98,21 @@ public class AIVehicle : MonoBehaviour
             Vector3 wheelVelocity = everyWheel.transform.InverseTransformDirection(everyWheel.wheelRigidbody.velocity);
             Vector3 vehicleWheelVelocity = everyWheel.transform.InverseTransformDirection(pointVelocity);
 
-            moveSpeed = wheelVelocity.z;
-
+            moveSpeed = XZVector(everyWheel.wheelRigidbody.velocity);
+            
             if (everyWheel.isMotorized)
             {
                 everyWheel.wheelRigidbody.AddTorque(everyWheel.currentWheel.right * (engineForce * verticalMovement));
                 
                 if (everyWheel.isGrounded && _rb.velocity.magnitude < speedLimit)
                 {
-                    _rb.AddForceAtPosition(everyWheel.transform.forward * moveSpeed, everyWheel.hitPos);
+                    _rb.AddForceAtPosition(moveSpeed, everyWheel.hitPos);
                 }
             }
 
             if (everyWheel.isGrounded)
             {
-                if (everyWheel.wheelRigidbody.angularVelocity.magnitude < engineForce / 10f && everyWheel.isBreakable)
+                if (everyWheel.isBreakable && isBreaking)
                 {
                     Vector3 wheelLocalVelocity = transform.InverseTransformDirection(_rb.GetPointVelocity(everyWheel.transform.position));
 
@@ -116,50 +153,6 @@ public class AIVehicle : MonoBehaviour
             everyWheel.wheelRigidbody.sleepThreshold = 0f;
             
             _rb.sleepThreshold = 0f;
-        }
-    }
-
-    public void GenerateWheels()
-    {
-        foreach (var everyWheel in wheels)
-        {
-            var rigidbodyComponent = everyWheel.currentWheel.gameObject.GetComponent<Rigidbody>();
-            var colliderComponent = everyWheel.currentWheel.gameObject.GetComponent<MeshCollider>();
-            
-            if (rigidbodyComponent == null)
-            {
-                everyWheel.currentWheel.gameObject.AddComponent<Rigidbody>();
-            }
-
-            if (colliderComponent == null)
-            {
-                everyWheel.currentWheel.gameObject.AddComponent<MeshCollider>();
-            }
-
-            const RigidbodyConstraints rigidbodyConstraints = RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
-
-            rigidbodyComponent.constraints = rigidbodyConstraints;
-
-            colliderComponent.convex = true;
-        }
-    }
-
-    private void MyInput()
-    {
-        var distance = transform.position - targetGameObject.transform.position;
-
-        var input = transform.InverseTransformDirection(distance);
-
-        if (input.z < 0f)
-        {
-            horizontalMovement = -input.normalized.x;
-            verticalMovement = -input.normalized.z;
-        }
-        
-        if (input.z >= 0f)
-        {
-            horizontalMovement = -input.normalized.x;
-            verticalMovement = -input.normalized.z;
         }
     }
 

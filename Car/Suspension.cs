@@ -2,8 +2,11 @@
 
 public class Suspension : MonoBehaviour
 {
-	[Header("Drift")] public float driftFriction;
+	[Header("Drift")] 
+	[Range(0f, 100f)] public float antiRoll;
+	public float driftFriction;
 	public float driftGrip;
+	public Vector3 driftCenterOfMass;
 	public float normalGrip;
 	public float driftTraction;
 	public float normalTraction;
@@ -24,7 +27,7 @@ public class Suspension : MonoBehaviour
 	[Header("Value Variables")]
 	public float wheelAngle;
 	public float steeringAngle;
-	public float traction;
+	public float skidAmount;
 	public float steerSpeed = 15f;
 	public float steerAngle = 37f;
 	public float lastCompression;
@@ -63,15 +66,25 @@ public class Suspension : MonoBehaviour
 		InitWheels();
 		
 		startRot = transform.localRotation.eulerAngles;
+		
+		if (currentWheel.GetComponent<Rigidbody>() != null)
+		{
+			wheelRigidbody = currentWheel.GetComponent<Rigidbody>();
+		}
+		
+		else if (currentWheel.GetChild(0).GetComponent<Rigidbody>() != null)
+		{
+			wheelRigidbody = currentWheel.GetChild(0).GetComponent<Rigidbody>();
+		}
 	}
 
 	private void LateUpdate()
 	{
-		if (traction > 0.05f && hitPos != Vector3.zero && isGrounded)
+		if (skidAmount > 0.05f && hitPos != Vector3.zero && isGrounded)
 		{
 			if ((bool) Skidmarks.Instance)
 			{
-				_lastSkid = Skidmarks.Instance.AddSkidMark(hitPos + vehicleRb.velocity * Time.fixedDeltaTime, hitNormal, traction * 0.9f, _lastSkid);
+				_lastSkid = Skidmarks.Instance.AddSkidMark(hitPos + vehicleRb.velocity * Time.fixedDeltaTime, hitNormal, skidAmount * 0.9f, _lastSkid);
 			}
 		}
 		
@@ -84,13 +97,18 @@ public class Suspension : MonoBehaviour
 	public void Drift()
 	{
 		grip = driftGrip;
-		traction = driftTraction;
+		skidAmount = driftTraction;
+
+		vehicleRb.centerOfMass = driftCenterOfMass;
+		vehicleRb.AddForceAtPosition(transform.up * antiRoll, transform.position);
 	}
 
 	public void EndDrift()
 	{
 		grip = normalGrip;
-		traction = normalTraction;
+		skidAmount = normalTraction;
+		
+		vehicleRb.ResetCenterOfMass();
 	}
 
 	private void OnDrawGizmos()
@@ -114,16 +132,6 @@ public class Suspension : MonoBehaviour
 		ApplyingSuspension();
 		WheelRotationCalculation();
 		MoveWheels();
-
-		if (currentWheel.GetComponent<Rigidbody>() != null)
-		{
-			wheelRigidbody = currentWheel.GetComponent<Rigidbody>();
-		}
-		
-		else if (currentWheel.GetChild(0).GetComponent<Rigidbody>() != null)
-		{
-			wheelRigidbody = currentWheel.GetChild(0).GetComponent<Rigidbody>();
-		}
 	}
 
 	private void ApplyingSuspension()
@@ -158,14 +166,12 @@ public class Suspension : MonoBehaviour
 	{
 		var pointVelocity = XZVector(vehicleRb.GetPointVelocity(hitPos));
 		
-		Vector3 localVel = transform.InverseTransformDirection(pointVelocity);
+		Vector3 localVel = currentWheel.transform.InverseTransformDirection(pointVelocity);
 		
 		var lateralVelocity = -transform.right * localVel.x;
 		
 		normalFrictionForce = lateralVelocity * (vehicleRb.mass * normalGrip);
 		var frictionForce = lateralVelocity * (vehicleRb.mass * grip);
-		
-		print(frictionForce);
 
 		if (isGrounded)
 		{

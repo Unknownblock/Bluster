@@ -3,10 +3,13 @@ using System.Collections.Generic;
 
 public class PathFinding : MonoBehaviour
 {
-
-    public Transform startPosition, targetPosition;
-    private GridSystem grid;
-
+    public float lineRendererOffset;
+    
+    public Transform startGameObject;
+    public Transform targetGameObject;
+    public GridSystem grid;
+    public LineRenderer lineRenderer;
+    
     private void Awake()
     {
         grid = GetComponent<GridSystem>();
@@ -14,7 +17,19 @@ public class PathFinding : MonoBehaviour
 
     private void Update()
     {
-        FindPath(startPosition.position, targetPosition.position);
+        FindPath(startGameObject.position, targetGameObject.transform.position);
+
+        if (grid.path.Count > 0)
+        {
+            lineRenderer.positionCount = grid.path.Count;
+        }
+        
+        for (int i = 0; i < grid.path.Count; i++)
+        {
+            var worldPos = new Vector3(grid.path[i].worldPosition.x, lineRendererOffset, grid.path[i].worldPosition.z);
+
+            lineRenderer.SetPosition(i, worldPos);
+        }
     }
 
     private void FindPath(Vector3 startPos, Vector3 targetPos)

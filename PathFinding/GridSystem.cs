@@ -1,12 +1,27 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Random = UnityEngine.Random;
 
 public class GridSystem : MonoBehaviour
 {
-
+	[Header("Assignable")]
+	public PathFinding pathFinding;
+	public Mesh mesh;
+	
+	[Header("Important Variables")]
+	public List<Node> path;
+	public float currentLength;
+	
+	[Header("Color Settings")] 
+	public Color pathColor;
+	public Color unWalkableColor;
+	public Color walkableColor;
+	
+	[Header("Settings")]
 	public LayerMask unWalkableMask;
 	public Vector2 gridWorldSize;
 	public float nodeRadius;
+	public float wallDistance;
 	public float distance;
 	public float sizeY;
 
@@ -17,14 +32,63 @@ public class GridSystem : MonoBehaviour
 
 	private void Awake()
 	{
+		CreateGrid();
+		
+		pathFinding = GetComponent<PathFinding>();
+	}
+
+	private void Update()
+	{
+		RandomSpot();
+
+		currentLength = CurrentLength();
+	}
+
+	private float CurrentLength()
+	{
+		if (path.Count < 2)
+			return currentLength = 0f;
+        
+		Vector3 previousCorner = path[0].worldPosition;
+		
+		float lengthSoFar = 0.0F;
+		int i = 1;
+		
+		while (i < path.Count) {
+			Vector3 currentCorner = path[i].worldPosition;
+			lengthSoFar += Vector3.Distance(previousCorner, currentCorner);
+			previousCorner = currentCorner;
+			i++;
+		}
+
+		return lengthSoFar;
+	}
+
+	private void RandomSpot()
+	{
+		if (Input.GetKeyDown(KeyCode.Space))
+		{
+			var x = Random.Range(gridSizeX, -gridSizeX);
+			var z = Random.Range(gridSizeY, -gridSizeY);
+
+			if (NodeFromWorldPoint(new Vector3(x, transform.position.y, z)).isWalkable)
+			{
+				pathFinding.startGameObject.transform.position = new Vector3(x, transform.position.y, z);
+			}
+			
+			else
+			{
+				RandomSpot();
+			}
+		}
+	}
+
+	public void CreateGrid()
+	{
 		nodeDiameter = nodeRadius * 2;
 		gridSizeX = Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
 		gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
-		CreateGrid();
-	}
-
-	private void CreateGrid()
-	{
+		
 		grid = new Node[gridSizeX, gridSizeY];
 		Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x / 2 - Vector3.forward * gridWorldSize.y / 2;
 
@@ -33,7 +97,7 @@ public class GridSystem : MonoBehaviour
 			for (int y = 0; y < gridSizeY; y++)
 			{
 				Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
-				bool walkable = !Physics.CheckSphere(worldPoint, nodeRadius, unWalkableMask);
+				bool walkable = !Physics.CheckSphere(worldPoint, wallDistance, unWalkableMask);
 				grid[x, y] = new Node(walkable, worldPoint, x, y);
 			}
 		}
@@ -76,8 +140,6 @@ public class GridSystem : MonoBehaviour
 		return grid[x, y];
 	}
 
-	public List<Node> path;
-
 	private void OnDrawGizmos()
 	{
 		Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, 1, gridWorldSize.y));
@@ -86,12 +148,17 @@ public class GridSystem : MonoBehaviour
 		{
 			foreach (Node everyNode in grid)
 			{
-				Gizmos.color = everyNode.isWalkable ? Color.white : Color.red;
-				if (path != null)
-					if (path.Contains(everyNode))
-						Gizmos.color = Color.black;
+				Gizmos.color = everyNode.isWalkable ? walkableColor : unWalkableColor;
 				
-				Gizmos.DrawCube(everyNode.worldPosition, new Vector3(1f, sizeY, 1f) * (nodeDiameter - distance));
+				if (path != null)
+				{
+					if (path.Contains(everyNode))
+					{
+						Gizmos.color = pathColor;
+					}
+				}
+				
+				Gizmos.DrawMesh(mesh, everyNode.worldPosition, Quaternion.identity, new Vector3(1f, sizeY, 1f) * (nodeDiameter - distance));
 			}
 		}
 	}

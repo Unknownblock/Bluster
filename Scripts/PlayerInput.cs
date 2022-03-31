@@ -70,7 +70,9 @@ public class PlayerInput : MonoBehaviour
 
 	private void Tilt()
 	{
-		tilt = Mathf.Lerp(tilt, desiredTilt + currentRotation.z, Time.deltaTime * tiltSmoothTime);
+		var wallRunTilt = PlayerMovement.Instance.currentWallRunTilt;
+		
+		tilt = Mathf.Lerp(tilt, desiredTilt + currentRotation.z + wallRunTilt, Time.deltaTime * tiltSmoothTime);
 		
 		if (PlayerMovement.Instance.isSliding)
 		{

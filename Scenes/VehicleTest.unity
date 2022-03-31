@@ -178,7 +178,7 @@ MonoBehaviour:
   restLength: 0
   restHeight: 0
   springTravel: 0.2
-  springStiffness: 75
+  springStiffness: 100
   damperStiffness: 2
   wheelRadius: 0.5
   currentWheelLock: {x: 0, y: 0, z: 0}
@@ -3347,7 +3347,7 @@ MonoBehaviour:
   restLength: 0
   restHeight: 0
   springTravel: 0.2
-  springStiffness: 75
+  springStiffness: 100
   damperStiffness: 2
   wheelRadius: 0.5
   currentWheelLock: {x: 0, y: 0, z: 0}
@@ -4395,7 +4395,7 @@ MonoBehaviour:
   restLength: 0
   restHeight: 0
   springTravel: 0.2
-  springStiffness: 75
+  springStiffness: 100
   damperStiffness: 2
   wheelRadius: 0.5
   currentWheelLock: {x: 0, y: 0, z: 0}
@@ -4797,7 +4797,7 @@ MonoBehaviour:
   restLength: 0
   restHeight: 0
   springTravel: 0.2
-  springStiffness: 75
+  springStiffness: 100
   damperStiffness: 2
   wheelRadius: 0.5
   currentWheelLock: {x: 0, y: 0, z: 0}

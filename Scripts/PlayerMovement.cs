@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+	private Collision otherObjectCollision;
+	
 	[Header("Assignable")]
 	public PlayerHealth playerHealth;
 
@@ -14,51 +16,34 @@ public class PlayerMovement : MonoBehaviour
 
 	[Header("Movement")]
 	public float extraGravity;
-
 	public float currentMoveSpeed = 12.5f;
-
 	public float walkSpeed = 12.5f;
-
 	public float sprintSpeed = 17.5f;
-
-	public float landSpeed;
-
 	public float movementMultiplier = 10f;
-
 	public float airMultiplier = 0.4f;
-
 	public float acceleration = 10f;
+
+	[Header("Wall Running")] 
+	public LayerMask wallRunLayer;
+	public float wallRunRotation;
+	public float currentWallRunTilt;
 
 	[Header("Ground Check")]
 	public LayerMask groundMask;
-
 	public float maxSlopeAngle = 50f;
-
 	public float footStepDistance;
 
 	[Header("Bool Variables")]
 	public bool isSliding;
 
+	public bool isWallRunning;
 	public bool isGrounded;
-
 	public bool isSurf;
 
 	public bool readyToMove;
-
 	public bool readyToCrouch;
-
 	public bool readyToJump;
-
-	public bool cancellingGrounded;
-
-	public bool cancellingSurf;
-
-	public int surfCancel;
-
-	public int groundCancel;
-
-	public float delay = 5f;
-
+	
 	[Header("Jumping")]
 	public float jumpCoolDown = 0.5f;
 
@@ -134,6 +119,7 @@ public class PlayerMovement : MonoBehaviour
 	private void Update()
 	{
 		ControlDrag();
+		WallRunning();
 		
 		velocity = rb.velocity; //Velocity Equals Player Rigidbody Velocity 
 
@@ -233,7 +219,6 @@ public class PlayerMovement : MonoBehaviour
 
 	private void MovePlayer()
 	{
-		UpdateCollisionChecks();
 		CheckInput();
 		FootSteps();
 		
@@ -312,13 +297,13 @@ public class PlayerMovement : MonoBehaviour
 		double num3 = new Vector2(rb.velocity.x, velocity.z).magnitude;
 		return new Vector2(y: (float)num3 * Mathf.Cos(num * ((float)Math.PI / 180f)), x: (float)num3 * Mathf.Cos(num2 * ((float)Math.PI / 180f)));
 	}
-
+	
 	private void ResetJump()
 	{
 		readyToJump = true;
 		CancelInvoke(nameof(JumpCooldown));
 	}
-
+	
 	private void Jump()
 	{
 		if ((isGrounded || isSurf || (!isGrounded && jumps > 0)) && readyToJump)
@@ -362,24 +347,14 @@ public class PlayerMovement : MonoBehaviour
 		readyToJump = true;
 	}
 
-	private bool IsFloor(Vector3 v)
+	private bool IsFloor(Vector3 normal)
 	{
-		return Vector3.Angle(Vector3.up, v) < maxSlopeAngle;
+		return Vector3.Angle(Vector3.up, normal) < maxSlopeAngle;
 	}
 	
-	private bool IsWall(Vector3 v)
+	private bool IsWall(Vector3 normal)
 	{
-		return Math.Abs(90f - Vector3.Angle(Vector3.up, v)) < 0.1f;
-	}
-
-	private bool IsSurf(Vector3 v)
-	{
-		float num = Vector3.Angle(Vector3.up, v);
-		if (num < 89.0)
-		{
-			return num > maxSlopeAngle;
-		}
-		return false;
+		return Math.Abs(90f - Vector3.Angle(Vector3.up, normal)) < 0.1f;
 	}
 
 	private void OnCollisionEnter(Collision other)
@@ -387,12 +362,9 @@ public class PlayerMovement : MonoBehaviour
 		int layer = other.gameObject.layer;
 		Vector3 normal = other.contacts[0].normal;
 		
-		if (groundMask == (groundMask | (1 << layer)) && IsFloor(normal))
+		if (IsFloor(normal) && (groundMask.value & (1 << layer)) == 1 << layer)
 		{
 			MoveCamera.Instance.BobOnce(new Vector3(0f, fallSpeed, 0f), offSetPos);
-			
-			currentMoveSpeed = landSpeed;
-			
 			hitPoint = other.contacts[0].point;
 			
 			GameObject obj = Instantiate(playerSmokeFx, hitPoint, Quaternion.LookRotation(transform.position - hitPoint));
@@ -423,75 +395,62 @@ public class PlayerMovement : MonoBehaviour
 		}
 	}
 
+	private void WallRunning()
+	{
+		if (isWallRunning)
+		{
+			for (int i = 0; i < otherObjectCollision.contactCount; i++)
+			{
+				
+				Vector3 hitNormal = otherObjectCollision.contacts[i].normal;
+				hitNormal = new Vector3(hitNormal.x, Mathf.Abs(hitNormal.y), hitNormal.z);
+				
+				if (IsWall(hitNormal))
+				{
+					var direction = orientation.transform.InverseTransformDirection(otherObjectCollision.contacts[i].point);
+					currentWallRunTilt = wallRunRotation * direction.normalized.x;
+				}
+			}
+		}
+
+		else
+		{
+			currentWallRunTilt = 0f;
+		}
+	}
+
 	private void OnCollisionStay(Collision other)
 	{
 		int layer = other.gameObject.layer;
-		
-		if ((groundMask.value & (1 << layer)) != 1 << layer)
-		{
-			return;
-		}
-		
+
+		otherObjectCollision = other;
+
 		for (int i = 0; i < other.contactCount; i++)
 		{
-			Vector3 normal = other.contacts[i].normal;
-			normal = new Vector3(normal.x, Mathf.Abs(normal.y), normal.z);
+			Vector3 hitNormal = other.contacts[i].normal;
+			hitNormal = new Vector3(hitNormal.x, Mathf.Abs(hitNormal.y), hitNormal.z);
 
-			if (IsFloor(normal))
+			if (IsFloor(hitNormal) && (groundMask.value & (1 << layer)) == 1 << layer)
 			{
-				hitPoint = other.contacts[0].point;
-				isSurf = Vector3.Angle(Vector3.up, normal) > 1.0;
+				hitPoint = other.contacts[i].point;
+				isSurf = Vector3.Angle(Vector3.up, hitNormal) > 1.0;
 				isGrounded = true;
-				normalVector = normal;
-				cancellingGrounded = false;
+				normalVector = hitNormal;
 				slopeMoveDirection = Vector3.ProjectOnPlane(moveDirection, other.contacts[0].normal);
 			}
 			
-			if (IsSurf(normal))
+			if (IsWall(hitNormal) && (wallRunLayer.value & (1 << layer)) == 1 << layer)
 			{
-				cancellingSurf = false;
+				isWallRunning = true;
 			}
 		}
 	}
 
-	private void UpdateCollisionChecks()
-	{
-		if (!cancellingGrounded)
-		{
-			cancellingGrounded = true;
-		}
-		
-		else
-		{
-			groundCancel++;
-			if (groundCancel > (double)delay)
-			{
-				StopGrounded();
-			}
-		}
-		
-		if (!cancellingSurf)
-		{
-			cancellingSurf = true;
-			surfCancel = 1;
-			return;
-		}
-		
-		surfCancel++;
-		if (!(surfCancel <= (double)delay))
-		{
-			StopSurf();
-		}
-	}
-
-	private void StopGrounded()
+	private void OnCollisionExit()
 	{
 		isGrounded = false;
-	}
-
-	private void StopSurf()
-	{
 		isSurf = false;
+		isWallRunning = false;
 	}
 
 	public Vector3 GetVelocity()

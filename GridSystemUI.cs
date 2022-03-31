@@ -9,11 +9,11 @@ public class GridSystemUI : Editor
         DrawDefaultInspector();
         
         var gridSystem = target as GridSystem;
-        
-        if (GUILayout.Button("Create And Initialize Grid"))
+        if (gridSystem != null)
         {
-            if (gridSystem != null)
+            if (GUILayout.Button("Create And Initialize Grid"))
             {
+
                 gridSystem.CreateGrid();
             }
         }

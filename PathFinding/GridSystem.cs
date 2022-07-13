@@ -39,9 +39,19 @@ public class GridSystem : MonoBehaviour
 
 	private void Update()
 	{
-		RandomSpot();
-
 		currentLength = CurrentLength();
+		
+		Vector3 worldBottomLeft = transform.position - Vector3.right * gridWorldSize.x / 2 - Vector3.forward * gridWorldSize.y / 2;
+
+		for (int x = 0; x < gridSizeX; x++)
+		{
+			for (int y = 0; y < gridSizeY; y++)
+			{
+				Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * nodeDiameter + nodeRadius) + Vector3.forward * (y * nodeDiameter + nodeRadius);
+				bool walkable = !Physics.CheckSphere(worldPoint, wallDistance, unWalkableMask);
+				grid[x, y] = new Node(walkable, worldPoint, x, y);
+			}
+		}
 	}
 
 	private float CurrentLength()
@@ -62,25 +72,6 @@ public class GridSystem : MonoBehaviour
 		}
 
 		return lengthSoFar;
-	}
-
-	private void RandomSpot()
-	{
-		if (Input.GetKeyDown(KeyCode.Space))
-		{
-			var x = Random.Range(gridSizeX, -gridSizeX);
-			var z = Random.Range(gridSizeY, -gridSizeY);
-
-			if (NodeFromWorldPoint(new Vector3(x, transform.position.y, z)).isWalkable)
-			{
-				pathFinding.startGameObject.transform.position = new Vector3(x, transform.position.y, z);
-			}
-			
-			else
-			{
-				RandomSpot();
-			}
-		}
 	}
 
 	public void CreateGrid()

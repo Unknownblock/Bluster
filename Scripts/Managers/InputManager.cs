@@ -42,6 +42,9 @@ public class InputManager : MonoBehaviour
     public ArrowSteering arrowSteering;
     public CustomButton accelerationPedal;
     public CustomButton brakePedal;
+    
+    public CustomButton positiveGearButton;
+    public CustomButton negativeGearButton;
 
     public float horizontalMovement;
     public float verticalMovement;
@@ -83,6 +86,18 @@ public class InputManager : MonoBehaviour
     private void TouchInputManagement()
     {
         verticalMovement = 0f;
+
+        if (vehicle.transmissionMode == Vehicle.TransmissionMode.Manual)
+        {
+            negativeGearButton.gameObject.SetActive(true);
+            positiveGearButton.gameObject.SetActive(true);
+        }
+
+        else
+        {
+            negativeGearButton.gameObject.SetActive(false);
+            positiveGearButton.gameObject.SetActive(false);
+        }
 
         if (steeringType == SteeringType.SteeringWheel)
         {
@@ -155,13 +170,13 @@ public class InputManager : MonoBehaviour
     {
         verticalMovement = 0f;
 
-        if (PauseMenu.Instance.isPaused)
+        if (PauseMenu.Instance.isPaused || MissionManager.Instance.missionState is MissionManager.MissionState.Completed or MissionManager.MissionState.Failed)
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
 
-        else if (!PauseMenu.Instance.isPaused)
+        else if (!PauseMenu.Instance.isPaused || MissionManager.Instance.missionState != MissionManager.MissionState.Normal)
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;

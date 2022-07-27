@@ -21,10 +21,19 @@ public class InputManager : MonoBehaviour
         GyroscopeAcceleration
     }
 
+    public enum TransmissionType
+    {
+        AutomaticTransmission,
+        ManualTransmission,
+        TiptronicTransmission,
+        SimpleTransmission
+    }
+
     [Header("Main Input")] 
     public InputType inputType;
     public SteeringType steeringType;
     public AccelerationType accelerationType;
+    public TransmissionType transmissionType;
 
     [Header("UI")] 
     public GameObject touchUI;
@@ -34,20 +43,29 @@ public class InputManager : MonoBehaviour
     public KeyCode backwardKey = KeyCode.S;
     public KeyCode rightKey = KeyCode.D;
     public KeyCode leftKey = KeyCode.A;
+    public KeyCode startEngineKey = KeyCode.F;
+    public KeyCode gearUp = KeyCode.E;
+    public KeyCode gearDown = KeyCode.Q;
     public KeyCode brakeKey = KeyCode.Space;
 
-    [Header("Input Management")] 
-    public Vehicle vehicle;
+    [Header("Input Management")]
     public SteeringWheel steeringWheel;
     public ArrowSteering arrowSteering;
+    public GearShifter automaticGearShifter;
+    public GearShifter manualGearShifter;
     public CustomButton accelerationPedal;
     public CustomButton brakePedal;
+
+    public CustomButton startEngineButton;
     
     public CustomButton positiveGearButton;
     public CustomButton negativeGearButton;
 
     public float horizontalMovement;
     public float verticalMovement;
+    
+    public float mouseX;
+    public float mouseY;
 
     public bool isBreaking;
 
@@ -59,176 +77,265 @@ public class InputManager : MonoBehaviour
     {
         Instance = this;
 
-        vehicleRb = vehicle.GetComponent<Rigidbody>();
+        vehicleRb = Vehicle.Instance.GetComponent<Rigidbody>();
     }
 
     private void Update()
     {
-        if (Instance.inputType == InputType.Handheld)
-        {
-            TouchInputManagement();
+        AccelerationInput();
+        SteeringInput();
+        GearInputManagement();
+        UIManagement();
 
-            touchUI.SetActive(true);
-        }
+        mouseX = Input.GetAxisRaw("Mouse X");
+		mouseY = Input.GetAxisRaw("Mouse Y");
 
-        if (Instance.inputType == InputType.Desktop)
-        {
-            DesktopInputManagement();
-
-            touchUI.SetActive(false);
-        }
-
-        vehicle.verticalMovement = verticalMovement;
-        vehicle.horizontalMovement = horizontalMovement;
-        vehicle.isBreaking = isBreaking;
+        Vehicle.Instance.verticalMovement = verticalMovement;
+        Vehicle.Instance.horizontalMovement = horizontalMovement;
+        Vehicle.Instance.isBreaking = isBreaking;
     }
 
-    private void TouchInputManagement()
+    private void UIManagement()
     {
-        verticalMovement = 0f;
-
-        if (vehicle.transmissionMode == Vehicle.TransmissionMode.Manual)
+        if (inputType == InputType.Desktop)
         {
-            negativeGearButton.gameObject.SetActive(true);
-            positiveGearButton.gameObject.SetActive(true);
-        }
+            touchUI.gameObject.SetActive(false);
 
-        else
-        {
-            negativeGearButton.gameObject.SetActive(false);
-            positiveGearButton.gameObject.SetActive(false);
-        }
-
-        if (steeringType == SteeringType.SteeringWheel)
-        {
-            horizontalMovement = steeringWheel.steeringInput;
-            steeringWheel.currentReleaseSpeed = vehicleRb.velocity.magnitude;
-
-            steeringWheel.gameObject.SetActive(true);
-            arrowSteering.gameObject.SetActive(false);
-        }
-
-        else if (steeringType == SteeringType.ArrowSteering)
-        {
-            horizontalMovement = arrowSteering.steeringInput;
-
-            steeringWheel.gameObject.SetActive(false);
-            arrowSteering.gameObject.SetActive(true);
-        }
-
-        else if (steeringType == SteeringType.GyroscopeSteering)
-        {
-            horizontalMovement = Input.acceleration.x;
-
-            steeringWheel.gameObject.SetActive(false);
-            arrowSteering.gameObject.SetActive(false);
-        }
-
-        if (accelerationType == AccelerationType.GyroscopeAcceleration)
-        {
-            if (-Input.acceleration.z > 0.1f)
-            {
-                verticalMovement = -Input.acceleration.z;
-            }
-
-            isBreaking = -Input.acceleration.z < -0.1f;
-
-            accelerationPedal.gameObject.SetActive(false);
-            brakePedal.gameObject.SetActive(false);
-        }
-
-        else if (accelerationType == AccelerationType.PedalAcceleration)
-        {
-            isBreaking = brakePedal.isPressed;
-            
-            if (vehicle.gearMode == Vehicle.GearMode.Reverse && accelerationPedal.isPressed)
-            {
-                verticalMovement -= 1f;
-            }
-
-            else if (vehicle.gearMode == Vehicle.GearMode.Drive && accelerationPedal.isPressed)
-            {
-                verticalMovement += 1f;
-            }
-
-            else if (vehicle.gearMode == Vehicle.GearMode.Neutral && accelerationPedal.isPressed)
-            {
-                verticalMovement += 1f;
-            }
-
-            else if (vehicle.gearMode == Vehicle.GearMode.Park && accelerationPedal.isPressed)
-            {
-                verticalMovement += 1f;
-            }
-            
-            accelerationPedal.gameObject.SetActive(true);
-            brakePedal.gameObject.SetActive(true);
-        }
-    }
-
-    private void DesktopInputManagement()
-    {
-        verticalMovement = 0f;
-
-        if (PauseMenu.Instance.isPaused || MissionManager.Instance.missionState is MissionManager.MissionState.Completed or MissionManager.MissionState.Failed)
-        {
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
-        }
-
-        else if (!PauseMenu.Instance.isPaused || MissionManager.Instance.missionState != MissionManager.MissionState.Normal)
-        {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
 
+        if (inputType == InputType.Handheld)
+        {
+            touchUI.gameObject.SetActive(true);
+
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+
+    private void AccelerationInput()
+    {
+        verticalMovement = 0f;
+
+        if (inputType == InputType.Desktop)
+        {
+            if (Input.GetKey(forwardKey))
+            {
+                verticalMovement++;
+            }
+
+            if (Input.GetKey(backwardKey))
+            {
+                verticalMovement--;
+            }
+        }
+
+        else if (inputType == InputType.Handheld)
+        {
+            TouchAcceleration();
+        }
+    }
+
+    private void SteeringInput()
+    {
         horizontalMovement = 0f;
-
-        isBreaking = Input.GetKey(Instance.brakeKey);
-
-        if (Input.GetKey(rightKey))
-        {
-            horizontalMovement += 1f;
-        }
-
-        if (Input.GetKey(leftKey))
-        {
-            horizontalMovement -= 1f;
-        }
-
-        if (Input.GetKey(forwardKey) && !vehicle.isShiftingGear)
-        {
-            vehicle.gearMode = Vehicle.GearMode.Drive;
-            verticalMovement += 1f;
-        }
-
-        if (Input.GetKey(backwardKey) && !vehicle.isShiftingGear)
-        {
-            vehicle.gearMode = Vehicle.GearMode.Reverse;
-            verticalMovement -= 1f;
-        }
         
-        if (Input.GetKeyDown(KeyCode.F))
+        if (inputType == InputType.Desktop)
         {
-            if (vehicle.transmissionMode == Vehicle.TransmissionMode.Automatic)
+            if (Input.GetKey(rightKey))
             {
-                vehicle.transmissionMode = Vehicle.TransmissionMode.Manual;
+                horizontalMovement++;
             }
-            
-            else if (vehicle.transmissionMode == Vehicle.TransmissionMode.Manual)
+
+            if (Input.GetKey(leftKey))
             {
-                vehicle.transmissionMode = Vehicle.TransmissionMode.Automatic;
+                horizontalMovement--;
             }
-        }
-        
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            vehicle.gearMode = Vehicle.GearMode.Neutral;
+
+            isBreaking = Input.GetKey(brakeKey);
         }
 
-        if (Input.GetKeyDown(KeyCode.P))
+        else if (inputType == InputType.Handheld)
         {
-            vehicle.gearMode = Vehicle.GearMode.Park;
+            TouchSteering();
+        }
+    }
+
+    private void TouchAcceleration()
+    {
+        if (accelerationType == AccelerationType.PedalAcceleration)
+        {
+            accelerationPedal.gameObject.SetActive(true);
+            brakePedal.gameObject.SetActive(true);
+
+            if (transmissionType == TransmissionType.SimpleTransmission)
+            {
+                if (accelerationType == AccelerationType.PedalAcceleration)   
+                {
+                    if (accelerationPedal.isPressed)
+                    {
+                        verticalMovement++;
+                    }
+
+                    if (brakePedal.isPressed)
+                    {
+                        verticalMovement--;
+                    }
+                }
+            }
+
+            else if (transmissionType != TransmissionType.SimpleTransmission)
+            {
+                if (accelerationPedal.isPressed)
+                {
+                    if (Vehicle.Instance.gearMode != Vehicle.GearMode.Reverse)
+                    {
+                        verticalMovement++;
+                    }
+
+                    else if (Vehicle.Instance.gearMode == Vehicle.GearMode.Reverse)
+                    {
+                        verticalMovement--;
+                    }
+                }
+
+                isBreaking = brakePedal.isPressed;
+            }
+        }
+
+        else if (accelerationType == AccelerationType.GyroscopeAcceleration)
+        {
+            accelerationPedal.gameObject.SetActive(false);
+            brakePedal.gameObject.SetActive(false);
+
+            verticalMovement = Input.acceleration.z;
+
+
+            if (verticalMovement > 0f)
+            {
+                Vehicle.Instance.gearMode = Vehicle.GearMode.Drive;
+            }
+
+            else if (verticalMovement < 0f)
+            {
+                Vehicle.Instance.gearMode = Vehicle.GearMode.Reverse;
+            }
+        }
+    }
+
+    private void TouchSteering()
+    {
+        if (steeringType == SteeringType.SteeringWheel)
+        {
+            steeringWheel.gameObject.SetActive(true);
+            arrowSteering.gameObject.SetActive(false);
+
+            horizontalMovement = steeringWheel.steeringInput;
+        }
+
+        else if (steeringType == SteeringType.ArrowSteering)
+        {
+            steeringWheel.gameObject.SetActive(false);
+            arrowSteering.gameObject.SetActive(true);
+
+            horizontalMovement = arrowSteering.steeringInput;
+        }
+
+        else if (steeringType == SteeringType.GyroscopeSteering)
+        {
+            steeringWheel.gameObject.SetActive(false);
+            arrowSteering.gameObject.SetActive(false);
+
+            horizontalMovement = Input.acceleration.x;
+        }
+    }
+
+    private void GearInputManagement()
+    {
+        if (inputType == InputType.Desktop)
+        {
+            if (Input.GetKeyDown(gearUp))
+            {
+                if (Vehicle.Instance.currentGearNum < Vehicle.Instance.driveGears.Length - 1)
+                {
+                    Vehicle.Instance.currentGearNum++;
+                }
+            }
+
+            else if (Input.GetKeyDown(gearDown))
+            {
+                if (Vehicle.Instance.currentGearNum > 0)
+                {
+                    Vehicle.Instance.currentGearNum--;
+                }
+            }
+        }
+
+        else if (inputType == InputType.Handheld)
+        {
+            TouchTransmission();
+        }
+    }
+
+    private void TouchTransmission()
+    {
+        if (transmissionType == TransmissionType.TiptronicTransmission)
+        {
+            positiveGearButton.gameObject.SetActive(true);
+            negativeGearButton.gameObject.SetActive(true);
+
+            automaticGearShifter.gameObject.SetActive(true);
+            manualGearShifter.gameObject.SetActive(false);
+
+            if (positiveGearButton.isPressed)
+            {
+                if (Vehicle.Instance.currentGearNum < Vehicle.Instance.driveGears.Length - 1)
+                {
+                    Vehicle.Instance.currentGearNum++;
+                }
+            }
+
+            else if (negativeGearButton.isPressed)
+            {
+                if (Vehicle.Instance.currentGearNum > 0)
+                {
+                    Vehicle.Instance.currentGearNum--;
+                }
+            }
+        }
+
+        else if (transmissionType == TransmissionType.AutomaticTransmission)
+        {
+            positiveGearButton.gameObject.SetActive(false);
+            negativeGearButton.gameObject.SetActive(false);
+
+            automaticGearShifter.gameObject.SetActive(true);
+            manualGearShifter.gameObject.SetActive(false);
+
+            Vehicle.Instance.transmissionMode = Vehicle.TransmissionMode.Automatic;
+        }
+
+        else if (transmissionType == TransmissionType.ManualTransmission)
+        {
+            positiveGearButton.gameObject.SetActive(false);
+            negativeGearButton.gameObject.SetActive(false);
+
+            automaticGearShifter.gameObject.SetActive(false);
+            manualGearShifter.gameObject.SetActive(true);
+
+            Vehicle.Instance.transmissionMode = Vehicle.TransmissionMode.Manual;
+        }
+
+        else if (transmissionType == TransmissionType.SimpleTransmission)
+        {
+            positiveGearButton.gameObject.SetActive(false);
+            negativeGearButton.gameObject.SetActive(false);
+
+            automaticGearShifter.gameObject.SetActive(false);
+            manualGearShifter.gameObject.SetActive(false);
+
+            Vehicle.Instance.transmissionMode = Vehicle.TransmissionMode.Automatic;
         }
     }
 }

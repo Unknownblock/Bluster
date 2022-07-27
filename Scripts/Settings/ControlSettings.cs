@@ -5,9 +5,9 @@ public class ControlSettings : MonoBehaviour
     public enum ControlSettingsState
     {
         ControlMainPage,
-        Transmission,
         SteeringSettings,
-        AccelerationSettings
+        AccelerationSettings,
+        TransmissionSettings
     }
 
     [Header("Main Variables")]
@@ -17,19 +17,19 @@ public class ControlSettings : MonoBehaviour
     public Settings settings;
     
     [Header("Acceleration Settings Variables")]
-    public GameObject accelerationSettings;
+    public SettingsOptionManager accelerationSettings;
     
     public CustomButton accelerationSettingsButton;
-    public CustomButton pedalAccelerationOption;
-    public CustomButton gyroscopeAccelerationOption;
     
     [Header("Steering Settings Variables")] 
-    public GameObject steeringSettings;
+    public SettingsOptionManager steeringSettings;
     
     public CustomButton steeringSettingsButton;
-    public CustomButton arrowSteeringOption;
-    public CustomButton steeringWheelOption;
-    public CustomButton gyroscopeSteeringOption;
+
+    [Header("Transmission Settings Variables")] 
+    public SettingsOptionManager transmissionSettings;
+    
+    public CustomButton transmissionSettingsButton;
 
     private void Update()
     {
@@ -43,15 +43,20 @@ public class ControlSettings : MonoBehaviour
         {
             SteeringSettings();
         }
+
+        else if (controlSettingsState == ControlSettingsState.AccelerationSettings)
+        {
+            AccelerationSettings();
+        }
         
         else if (controlSettingsState == ControlSettingsState.ControlMainPage)
         {
             ControlsSettings();
         }
-        
-        else if (controlSettingsState == ControlSettingsState.AccelerationSettings)
+
+        else if (controlSettingsState == ControlSettingsState.TransmissionSettings)
         {
-            AccelerationSettings();
+            TransmissionSettings();
         }
     }
     
@@ -66,36 +71,59 @@ public class ControlSettings : MonoBehaviour
         {
             controlSettingsState = ControlSettingsState.SteeringSettings;
         }
+
+        else if (transmissionSettingsButton.isPressed)
+        {
+            controlSettingsState = ControlSettingsState.TransmissionSettings;
+        }
     }
 
     private void SteeringSettings()
     {
-        if (steeringWheelOption.isPressed)
+        if (steeringSettings.chosenOptionNum == 0)
         {
             InputManager.Instance.steeringType = InputManager.SteeringType.SteeringWheel;
         }
         
-        else if (arrowSteeringOption.isPressed)
+        else if (steeringSettings.chosenOptionNum == 1)
         {
             InputManager.Instance.steeringType = InputManager.SteeringType.ArrowSteering;
         }
         
-        else if (gyroscopeSteeringOption.isPressed)
+        else if (steeringSettings.chosenOptionNum == 2)
         {
             InputManager.Instance.steeringType = InputManager.SteeringType.GyroscopeSteering;
         }
     }
 
-    private void AccelerationSettings()
+    private void TransmissionSettings()
     {
-        if (gyroscopeAccelerationOption.isPressed)
+        if (transmissionSettings.chosenOptionNum == 0)
         {
-            InputManager.Instance.accelerationType = InputManager.AccelerationType.GyroscopeAcceleration;
+            InputManager.Instance.transmissionType = InputManager.TransmissionType.AutomaticTransmission;
         }
         
-        else if (pedalAccelerationOption.isPressed)
+        else if (transmissionSettings.chosenOptionNum == 1)
+        {
+            InputManager.Instance.transmissionType = InputManager.TransmissionType.ManualTransmission;
+        }
+        
+        else if (transmissionSettings.chosenOptionNum == 2)
+        {
+            InputManager.Instance.transmissionType = InputManager.TransmissionType.SimpleTransmission;
+        }
+    }
+
+    private void AccelerationSettings()
+    {
+        if (accelerationSettings.chosenOptionNum == 0)
         {
             InputManager.Instance.accelerationType = InputManager.AccelerationType.PedalAcceleration;
+        }
+
+        else if (accelerationSettings.chosenOptionNum == 1)
+        {
+            InputManager.Instance.accelerationType = InputManager.AccelerationType.GyroscopeAcceleration;
         }
     }
     
@@ -104,22 +132,33 @@ public class ControlSettings : MonoBehaviour
         if (controlSettingsState == ControlSettingsState.ControlMainPage)
         {
             mainPage.SetActive(true);
-            steeringSettings.SetActive(false);
-            accelerationSettings.SetActive(false);
+            steeringSettings.gameObject.SetActive(false);
+            accelerationSettings.gameObject.SetActive(false);
+            transmissionSettings.gameObject.SetActive(false);
         }
         
         else if (controlSettingsState == ControlSettingsState.SteeringSettings)
         {
             mainPage.SetActive(false);
-            steeringSettings.SetActive(true);
-            accelerationSettings.SetActive(false);
+            steeringSettings.gameObject.SetActive(true);
+            accelerationSettings.gameObject.SetActive(false);
+            transmissionSettings.gameObject.SetActive(false);
         }
         
         else if (controlSettingsState == ControlSettingsState.AccelerationSettings)
         {
             mainPage.SetActive(false);
-            steeringSettings.SetActive(false);
-            accelerationSettings.SetActive(true);
+            steeringSettings.gameObject.SetActive(false);
+            accelerationSettings.gameObject.SetActive(true);
+            transmissionSettings.gameObject.SetActive(false);
+        }
+
+        else if (controlSettingsState == ControlSettingsState.TransmissionSettings)
+        {
+            mainPage.SetActive(false);
+            steeringSettings.gameObject.SetActive(false);
+            accelerationSettings.gameObject.SetActive(false);
+            transmissionSettings.gameObject.SetActive(true);
         }
     }
 
@@ -136,6 +175,11 @@ public class ControlSettings : MonoBehaviour
         }
 
         else if (settings.controlSettings.controlSettingsState == ControlSettingsState.SteeringSettings)
+        {
+            controlSettingsState = ControlSettingsState.ControlMainPage;
+        }
+
+        else if (settings.controlSettings.controlSettingsState == ControlSettingsState.TransmissionSettings)
         {
             controlSettingsState = ControlSettingsState.ControlMainPage;
         }

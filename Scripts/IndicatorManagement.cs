@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class IndicatorManagement : MonoBehaviour
 {
-    public Indicator indicator;
-    public List<Indicator> indicators;
+    public GameObject indicator;
+    public List<GameObject> indicators;
     public int[] nums;
     public int numberOfIndicators;
     public float distance;
@@ -25,7 +26,7 @@ public class IndicatorManagement : MonoBehaviour
             
             indicators[i].transform.localRotation = Quaternion.Euler(indicatorRotation);
             indicators[i].transform.GetChild(0).localRotation = Quaternion.Euler(textRotation);
-            indicators[i].textMeshProUGUI.text = value.ToString();
+            indicators[i].transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = value.ToString();
             indicators[i].transform.name = value.ToString();
         }
     }

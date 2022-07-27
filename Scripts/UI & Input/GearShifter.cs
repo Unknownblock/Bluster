@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class GearShifter : MonoBehaviour, IPointerDownHandler
+public class GearShifter : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("Assignable Variables")]
     public Gear[] gears;
@@ -10,24 +10,37 @@ public class GearShifter : MonoBehaviour, IPointerDownHandler
 
     public Vehicle vehicle;
 
-    public CustomButton positiveGearButton;
-    public CustomButton negativeGearButton;
-    
+    public PointerEventData pointerEventData;
+
     [Header("Settings")]
+    public bool isHovered;
     public float autoDistance;
 
     [Header("Information")] 
     public Vector3 pointerPosition;
-    
-    public void OnPointerDown(PointerEventData eventData)
+
+    public void OnPointerEnter(PointerEventData eventData)
     {
-        pointerPosition = new Vector3(eventData.pointerCurrentRaycast.screenPosition.x, eventData.pointerCurrentRaycast.screenPosition.y, 0f);
+        isHovered = true;
+        pointerEventData = eventData;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        isHovered = false;
     }
 
     private void FixedUpdate()
     {
         GearShifting();
-        ManualGearShifting();
+        
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            if (pointerEventData != null)
+            {
+                pointerPosition = new Vector3(pointerEventData.pointerCurrentRaycast.screenPosition.x, pointerEventData.pointerCurrentRaycast.screenPosition.y, 0f);
+            }
+        }
     }
 
     private void GearShifting()
@@ -44,6 +57,8 @@ public class GearShifter : MonoBehaviour, IPointerDownHandler
                 {
                     vehicle.gearMode = Vehicle.GearMode.Drive;
                     vehicle.currentGearNum = result - 1;
+
+                    InputManager.Instance.transmissionType = InputManager.TransmissionType.ManualTransmission;
                 }
 
                 else
@@ -52,49 +67,34 @@ public class GearShifter : MonoBehaviour, IPointerDownHandler
                     {
                         vehicle.transmissionMode = Vehicle.TransmissionMode.Automatic;
                         vehicle.gearMode = Vehicle.GearMode.Park;
+                        InputManager.Instance.transmissionType = InputManager.TransmissionType.AutomaticTransmission;
                     }
                     
                     else if (everyGear.name is "Reverse" or "R")
                     {
                         vehicle.gearMode = Vehicle.GearMode.Reverse;
+                        InputManager.Instance.transmissionType = InputManager.TransmissionType.AutomaticTransmission;
                     }
                     
                     else if (everyGear.name is "Neutral" or "N")
                     {
                         vehicle.transmissionMode = Vehicle.TransmissionMode.Automatic;
                         vehicle.gearMode = Vehicle.GearMode.Neutral;
+                        InputManager.Instance.transmissionType = InputManager.TransmissionType.AutomaticTransmission;
                     }
                     
                     else if (everyGear.name is "Drive" or "D")
                     {
                         vehicle.transmissionMode = Vehicle.TransmissionMode.Automatic;
                         vehicle.gearMode = Vehicle.GearMode.Drive;
+                        InputManager.Instance.transmissionType = InputManager.TransmissionType.AutomaticTransmission;
                     }
                     
                     else if (everyGear.name is "Manual" or "M")
                     {
-                        vehicle.transmissionMode = Vehicle.TransmissionMode.Manual;
+                        InputManager.Instance.transmissionType = InputManager.TransmissionType.TiptronicTransmission;
                     }
                 }
-            }
-        }
-    }
-
-    private void ManualGearShifting()
-    {
-        if (positiveGearButton.isPressed)
-        {
-            if (vehicle.currentGearNum < vehicle.driveGears.Length - 1)
-            {
-                vehicle.currentGearNum++;
-            }
-        }
-
-        if (negativeGearButton.isPressed)
-        {
-            if (vehicle.currentGearNum > 0)
-            {
-                vehicle.currentGearNum--;
             }
         }
     }

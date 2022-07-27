@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class Suspension : MonoBehaviour
 {
@@ -23,7 +24,6 @@ public class Suspension : MonoBehaviour
 
 	[Header("Suspension Information")]
 	public float wheelRpm;
-	public float wheelEngineRpm;
 	
 	[Header("Friction Settings")] 
 	public float slipRatio;
@@ -33,11 +33,15 @@ public class Suspension : MonoBehaviour
 	public float slipGrip;
 	public float grip;
 
-	[Header("SkidMark Settings")]
+	[Header("Visual Settings")]
 	public float skidIntensity = 20.0f;
 	public int lastSkid = -1;
 
+	public float smokeIntensity;
+	public ParticleSystem smoke;
+
 	[Header("WheelLock Settings")] 
+	public float angularDrag;
 	public Vector3 wheelLock;
 
 	[Header("Steering Settings")] 
@@ -46,8 +50,7 @@ public class Suspension : MonoBehaviour
 	public float steerSpeed = 15f;
 	public float steerAngle = 37f;
 
-	[Header("Assignable Variables")] 
-	public Vehicle vehicle;
+	[Header("Assignable Variables")]
 	public Rigidbody vehicleRb;
 
 	public GameObject wheelPrefab;
@@ -64,6 +67,8 @@ public class Suspension : MonoBehaviour
 	public bool canRotate;
 
 	[Header("Others")] 
+	public Vector3 wheelLocalVelocity;
+	private Vector3 wheelPointVelocity;
 	private Vector3 startRot;
 	private Vector3 frictionForce;
 	public Vector3 hitPoint;
@@ -83,7 +88,7 @@ public class Suspension : MonoBehaviour
 
 		startRot = transform.localRotation.eulerAngles;
 	}
-
+	
 	private void FixedUpdate()
 	{
 		WheelManagement();
@@ -97,14 +102,13 @@ public class Suspension : MonoBehaviour
 
 		if (canRotate && isGrounded)
 		{
-			var wheelPerimeter = wheelRadius * 2f * Mathf.PI;
-			var wheelRollRpm = Mathf.Abs(wheelDirectionVelocity.z) / wheelPerimeter * 60f;
+			var wheelRollRpm = wheelDirectionVelocity.z / wheelRadius * 60f;
 			wheelRpm = wheelRollRpm;
 		}
 
 		else
 		{
-			wheelRpm = 0f;
+			wheelRpm = Mathf.Lerp(wheelRpm, 0f, angularDrag * Time.deltaTime);
 		}
 	}
 
@@ -127,30 +131,49 @@ public class Suspension : MonoBehaviour
 		{
 			isGrounded = false;
 			hitHeight = suspensionLength + restHeight;
+			hitPoint = Vector3.zero;
+			hitNormal = Vector3.zero;
 		}
 	}
 
 	private void StateManager()
 	{
+		var lateralVelocity = gameObject.transform.right * wheelLocalVelocity.x;
+		
+		if (isGrounded)
+		{
+			if (slipRatio > slipAmount && isMotorized)
+			{
+				wheelState = WheelState.Slipping;
+			}
+
+			else if ((InputManager.Instance.isBreaking && isBreakable) || Vehicle.Instance.gearMode == Vehicle.GearMode.Park)
+			{
+				wheelState = WheelState.Braking;
+			}
+
+			else if (Mathf.Abs(lateralVelocity.magnitude) > slipFriction)
+			{
+				wheelState = WheelState.Drifting;
+			}
+
+			else
+			{
+				wheelState = WheelState.Normal;
+			}
+		}
+		
 		if (wheelState == WheelState.Normal)
 		{
 			isSkidding = false;
 			grip = normalGrip;
 			canRotate = true;
-		}
-		
-		else if (wheelState == WheelState.Drifting)
-		{
-			isSkidding = true;
-			grip = slipGrip;
-			canRotate = true;
-		}
 
-		else if (wheelState == WheelState.Braking)
-		{
-			isSkidding = true;
-			grip = slipGrip;
-			canRotate = false;
+			var emission = smoke.emission;
+
+			emission.rateOverTime = 0f;
+
+			smoke.transform.position = hitPoint;
 		}
 		
 		else if (wheelState == WheelState.Slipping)
@@ -158,52 +181,64 @@ public class Suspension : MonoBehaviour
 			isSkidding = true;
 			grip = slipGrip;
 			canRotate = true;
+
+			var emission = smoke.emission;
+			var velocityOverLifetimeModule = smoke.velocityOverLifetime;
+
+			emission.rateOverTime = Mathf.Abs(slipRatio) * smokeIntensity;
+
+			smoke.transform.position = hitPoint;
+		}
+		
+		else if (wheelState == WheelState.Drifting)
+		{
+			isSkidding = true;
+			grip = slipGrip;
+			canRotate = true;
+
+			var emission = smoke.emission;
+
+			emission.rateOverTime = vehicleRb.velocity.magnitude * smokeIntensity;
+
+			smoke.transform.position = hitPoint;
+		}
+
+		else if (wheelState == WheelState.Braking)
+		{
+			isSkidding = true;
+			grip = slipGrip;
+			canRotate = false;
+
+			var emission = smoke.emission;
+
+			emission.rateOverTime = vehicleRb.velocity.magnitude * smokeIntensity;
+
+			smoke.transform.position = hitPoint;
 		}
 	}
 	
-	public void WheelBrake()
+	public void Brake()
 	{
-		var pointVelocity = vehicleRb.GetPointVelocity(transform.position);
-		var forwardVelocity = transform.InverseTransformDirection(pointVelocity);
-            
-		vehicleRb.AddForceAtPosition(transform.forward * (-forwardVelocity.z * vehicle.brakeForce), hitPoint, ForceMode.Force);
+		if (isGrounded)
+		{
+			vehicleRb.AddForceAtPosition(transform.forward * (Time.deltaTime * (-wheelLocalVelocity.z)) * Vehicle.Instance.brakeForce, hitPoint, ForceMode.Force);
+		}
 	}
 
 	private void FrictionAndDrift()
 	{
-		var pointVelocity = XZVector(vehicleRb.GetPointVelocity(hitPoint));
+		wheelPointVelocity = XZVector(vehicleRb.GetPointVelocity(hitPoint));
+		wheelLocalVelocity = transform.InverseTransformDirection(wheelPointVelocity);
 
-		Vector3 localVel = transform.InverseTransformDirection(pointVelocity);
+		var lateralVelocity = gameObject.transform.right * wheelLocalVelocity.x;
 
-		var lateralVelocity = -gameObject.transform.right * localVel.x;
+		frictionForce = -lateralVelocity * (vehicleRb.mass * grip);
 		
-		slipRatio = (vehicle.CalculateForce(vehicle.engineRpm, wheelRadius, vehicle.currentGear) / 3600f - localVel.z) / localVel.z;
-
-		frictionForce = lateralVelocity * (vehicleRb.mass * grip);
-
-		if ((InputManager.Instance.isBreaking && isBreakable) || vehicle.gearMode == Vehicle.GearMode.Park)
-		{
-			wheelState = WheelState.Braking;
-		}
-
-		else if (Mathf.Abs(localVel.x) > slipFriction)
-		{
-			wheelState = WheelState.Drifting;
-		}
-		
-		else if (slipRatio > slipAmount && isMotorized)
-		{
-			wheelState = WheelState.Slipping;
-		}
-
-		else
-		{
-			wheelState = WheelState.Normal;
-		}
-
 		if (isGrounded)
 		{
 			vehicleRb.AddForceAtPosition(frictionForce, hitPoint);
+			
+			slipRatio = (Vehicle.Instance.CalculateForce(Vehicle.Instance.engineRpm, wheelRadius, Vehicle.Instance.currentGear) / 3600f - wheelLocalVelocity.z) / wheelLocalVelocity.z;
 		}
 	}
 
@@ -223,21 +258,13 @@ public class Suspension : MonoBehaviour
 		attachedWheel.transform.position = wantedWheelPos;
 		attachedWheel.localScale = Vector3.one * (wheelRadius * 2f);
 
-		var wheelVelocity = vehicleRb.GetPointVelocity(transform.position);
-		var wheelDirectionVelocity = transform.InverseTransformDirection(wheelVelocity);
-
-		if (canRotate && isGrounded)
+		if (canRotate)
 		{
-			var wheelPerimeter = wheelRadius * Mathf.PI;
-			var wheelRollRps = wheelDirectionVelocity.z / wheelPerimeter;
-			attachedWheel.Rotate(Vector3.right, wheelRollRps);
+			attachedWheel.Rotate(Vector3.right, wheelRpm / 60f);
 
 			if (isMotorized)
 			{
-				var wheelRollRpm = Mathf.Abs(wheelDirectionVelocity.z) / wheelPerimeter * 60f;
-				var engineWheelRpm = vehicle.CalculateWheelRpm(vehicle.engineRpm, vehicle.currentGear);
-				var addedRpm = Mathf.Abs(engineWheelRpm - wheelRollRpm);
-				attachedWheel.Rotate(Vector3.right, addedRpm / 600f);
+				attachedWheel.Rotate(Vector3.right, Vehicle.Instance.CalculateWheelRpm(Vehicle.Instance.engineRpm, Vehicle.Instance.currentGear));
 			}
 		}
 
@@ -246,10 +273,10 @@ public class Suspension : MonoBehaviour
 			wheelAngle = Mathf.Lerp(wheelAngle, steeringAngle, steerSpeed * Time.deltaTime);
 		}
 
-		Vector3 wheelRot = transform.localRotation.eulerAngles;
+		var wheelRot = transform.localRotation.eulerAngles;
 		wheelRot.y = wheelAngle;
 
-		Quaternion currentWheelRot = attachedWheel.transform.localRotation;
+		var currentWheelRot = attachedWheel.transform.localRotation;
 
 		currentWheelRot.y = wheelLock.y;
 		currentWheelRot.z = wheelLock.z;
@@ -280,12 +307,12 @@ public class Suspension : MonoBehaviour
 	{
 		return new Vector3(vector3.x, 0f, vector3.z);
 	}
-
+	
 	private void SkidMarksManagement()
 	{
 		var velocity = XZVector(vehicleRb.velocity).magnitude;
-        			
-        if (isSkidding) 
+		
+		if (isSkidding) 
         {
 	        var intensity = Mathf.Clamp01(velocity / skidIntensity);
 	        var skidPoint = hitPoint + vehicleRb.velocity * Time.deltaTime;

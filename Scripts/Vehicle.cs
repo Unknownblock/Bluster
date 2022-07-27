@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using TMPro;
 using UnityEngine;
 
 public class Vehicle : MonoBehaviour
@@ -18,30 +17,36 @@ public class Vehicle : MonoBehaviour
         Drive
     }
 
-    [Header("Vehicle Settings")] public bool startedTheVehicle;
+    [Header("Vehicle Settings")]
     public TransmissionMode transmissionMode;
     public GearMode gearMode;
     
-    public float maxRpm;
     public float airResistance;
+    public float normalAirResistance;
     public float brakeForce;
+    
+    [Header("Engine Settings")]
+    public bool startedTheVehicle;
+
+    public float brakeVelocity;
+    public float hpRatio;
+    public float engineHorsePower;
+    
+    public float engineStartDuration;
+    public float currentEngineStartTime;
+    public float maxRpm;
 
     [Header("Vehicle Information")]
     public bool isShiftingGear;
     
     public int vehicleSpeed;
+
+    public float wheelEngineRpm;
     public float engineRpm;
     public float smoothEngineRpm;
     
     [Header("Audio Management")] 
     public AudioSource engineSound;
-    
-    [Header("UI Variables")]
-    public TextMeshProUGUI speedIndicator;
-    public TextMeshProUGUI gearIndicator;
-    
-    public Speedometer tachometer;
-    public Speedometer speedometer;
 
     [Header("Gear Management")]
     public Gear[] driveGears;
@@ -60,51 +65,127 @@ public class Vehicle : MonoBehaviour
     
     public bool isBreaking;
 
-    private Rigidbody _rb;
+    public static Vehicle Instance { get; private set; }
 
-    private void Start()
+    public Rigidbody _rb;
+
+    private void Awake()
     {
         _rb = GetComponent<Rigidbody>();
         _rb.sleepThreshold = 0f;
+
+        Instance = this;
     }
 
     private void FixedUpdate()
     {
-        VehicleMovement();
+        VehicleManagement();
         RpmManagement();
         GearManagement();
-        UIManagement();
         AudioManagement();
+        ManagingOthers();
 
+        engineHorsePower = engineRpm * hpRatio;
+    }
+
+    private void ManagingOthers()
+    {
         vehicleSpeed = (int)(XZVector(_rb.velocity).magnitude * 3.6f);
         
-        smoothEngineRpm = Mathf.Lerp(smoothEngineRpm, engineRpm, 0.05f);
+        smoothEngineRpm = Mathf.Lerp(smoothEngineRpm, engineRpm, 0.1f);
     }
 
     private void AudioManagement()
     {
         engineSound.pitch = smoothEngineRpm / maxRpm * 3f;
     }
-
-    private void UIManagement()
+    
+    private void VehicleManagement()
     {
-        speedIndicator.text = vehicleSpeed.ToString();
-        tachometer.value = (int)smoothEngineRpm;    
-        speedometer.value = vehicleSpeed;
-        
-        if (gearMode is GearMode.Drive or GearMode.Reverse)
+        FrictionAndForces();
+
+        if (_rb.velocity.magnitude < 0.5f)
         {
-            gearIndicator.text = currentGear.gearName;
+            if (verticalMovement == 0f)
+            {
+                _rb.velocity = Vector3.zero;
+            }
         }
-        
-        else if (gearMode == GearMode.Neutral)
+
+        foreach (var everyWheel in wheels)
         {
-            gearIndicator.text = "N";
-        }
-        
-        else if (gearMode == GearMode.Park)
-        {
-            gearIndicator.text = "P";
+            if (gearMode == GearMode.Park)
+            {
+                everyWheel.Brake();
+            }
+
+            else if (_rb.velocity.magnitude <= brakeVelocity && verticalMovement == 0f)
+            {
+                if (everyWheel.isBreakable)
+                {
+                    everyWheel.Brake();
+                }
+            }
+            
+            else if (isBreaking)
+            {
+                if (everyWheel.isBreakable)
+                {
+                    everyWheel.Brake();
+                }
+            }
+
+            if (everyWheel.isMotorized && everyWheel.isGrounded)
+            {
+                if (!isShiftingGear && !isBreaking && startedTheVehicle)
+                {
+                    if (gearMode == GearMode.Drive)
+                    {
+                        var force = everyWheel.transform.forward * CalculateForce(engineRpm, everyWheel.wheelRadius, currentGear) / 3600f;
+                        
+                        if (_rb.velocity.magnitude < force.magnitude)
+                        {
+                            _rb.AddForceAtPosition(force, everyWheel.hitPoint, ForceMode.Force);
+                        }
+                    }
+                    
+                    if (gearMode == GearMode.Reverse)
+                    {
+                        var force = everyWheel.transform.forward * CalculateForce(engineRpm, everyWheel.wheelRadius, reverseGear) / 3600f;
+                        
+                        if (_rb.velocity.magnitude < force.magnitude)
+                        {
+                            _rb.AddForceAtPosition(force, everyWheel.hitPoint, ForceMode.Force);
+                        }
+                    }
+                }
+            }
+            
+            if (everyWheel.isSteerable)
+            {
+                everyWheel.steeringAngle = everyWheel.steerAngle * horizontalMovement;
+            }
+
+            if (verticalMovement == -1)
+            {
+                if (everyWheel.wheelLocalVelocity.z > brakeForce)
+                {
+                    if (everyWheel.isBreakable)
+                    {
+                        everyWheel.Brake();
+                    }
+                }
+
+                if (everyWheel.wheelLocalVelocity.z <= brakeForce)
+                {
+                    gearMode = GearMode.Reverse;
+                }
+            }
+
+            else if (verticalMovement == 1)
+            {
+                gearMode = GearMode.Drive;
+            }
         }
     }
 
@@ -112,10 +193,11 @@ public class Vehicle : MonoBehaviour
     {
         foreach (var everyWheel in wheels)
         {
-            var wheelEngineRpm = CalculateEngineRpm(everyWheel.wheelRpm, currentGear);
+            if (engineHorsePower > 0f)
+            { 
+                wheelEngineRpm = CalculateEngineRpm(Mathf.Abs(everyWheel.wheelRpm), currentGear) / (engineHorsePower / 100f);
+            }
 
-            everyWheel.wheelEngineRpm = wheelEngineRpm;
-            
             if (everyWheel.isMotorized)
             {
                 if (isShiftingGear)
@@ -131,18 +213,26 @@ public class Vehicle : MonoBehaviour
                     }
                 }
                 
-                engineRpm = Mathf.Lerp(engineRpm, wheelEngineRpm, 0.01f);
+                if (everyWheel.isGrounded)
+                {
+                    engineRpm = Mathf.Lerp(engineRpm, wheelEngineRpm, 0.005f);
+                }
+
+                if (verticalMovement == 0)
+                {
+                    engineRpm = Mathf.Lerp(engineRpm, wheelEngineRpm, 0.1f);
+                }
             }
         }
 
-        if (engineRpm > maxRpm + 1000f)
+        if (engineRpm > maxRpm + 500f)
         {
             engineRpm = Mathf.Lerp(engineRpm, 0f, 0.1f);
         }
         
         if (startedTheVehicle && verticalMovement == 0f)
         {
-            engineRpm = Mathf.Lerp(engineRpm, 1500f, 0.25f);
+            engineRpm = Mathf.Lerp(engineRpm, 1000f, 0.1f);
         }
     }
 
@@ -150,14 +240,23 @@ public class Vehicle : MonoBehaviour
     {
         if (gearMode == GearMode.Drive && !isShiftingGear)
         {
-            if (transmissionMode == TransmissionMode.Manual)
-            {
-                ManualTransmission();
-            }
-
             if (transmissionMode == TransmissionMode.Automatic)
             {
-                AutomaticTransmission();
+                if (engineRpm <= currentGear.minimumRpm || wheelEngineRpm <= currentGear.minimumRpm)
+                {
+                    if (currentGearNum > 0)
+                    {
+                        currentGearNum--;
+                    }
+                }
+            
+                else if (engineRpm >= currentGear.maximumRpm && wheelEngineRpm >= currentGear.maximumRpm)
+                {
+                    if (currentGearNum < driveGears.Length - 1)
+                    {
+                        currentGearNum++;
+                    }
+                }
             }
         }
         
@@ -173,45 +272,7 @@ public class Vehicle : MonoBehaviour
             StartCoroutine(ShiftGear(reverseGear));
         }
     }
-
-    private void ManualTransmission()
-    {
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            if (currentGearNum < driveGears.Length - 1)
-            {
-                currentGearNum++;
-            }
-        }
-
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            if (currentGearNum > 0)
-            {
-                currentGearNum--;
-            }
-        }
-    }
-
-    private void AutomaticTransmission()
-    {
-        if (engineRpm <= currentGear.minimumRpm)
-        {
-            if (currentGearNum > 0)
-            {
-                currentGearNum--;
-            }
-        }
-        
-        else if (engineRpm >= currentGear.maximumRpm)
-        {
-            if (currentGearNum < driveGears.Length - 1)
-            {
-                currentGearNum++;
-            }
-        }
-    }
-
+    
     private IEnumerator ShiftGear(Gear nextGear)
     {
         if (currentGear != nextGear)
@@ -231,66 +292,13 @@ public class Vehicle : MonoBehaviour
 
     private void FrictionAndForces()
     {
-        var localVelocity = transform.InverseTransformDirection(_rb.velocity);
-        
-        if (verticalMovement == 0f || !isShiftingGear || isBreaking)
-        {
-            _rb.AddForce(gameObject.transform.forward * (-localVelocity.z * 0.5f), ForceMode.Force);
-        }
-        
-        if (verticalMovement != 0f && !isShiftingGear && !isBreaking)
-        {
-            _rb.AddForce(gameObject.transform.forward * (-localVelocity.z * airResistance), ForceMode.Force);
-        }
-    }
-
-    private void VehicleMovement()
-    {
-        VehicleSteering();
-        FrictionAndForces();
-
         foreach (var everyWheel in wheels)
         {
-            if (gearMode == GearMode.Park)
+            if (everyWheel.isGrounded)
             {
-                everyWheel.WheelBrake();
-            }
+                var localVelocity = transform.InverseTransformDirection(_rb.velocity);
 
-            if (isBreaking)
-            {
-                if (everyWheel.isBreakable)
-                {
-                    everyWheel.WheelBrake();
-                }
-            }
-
-            if (everyWheel.isMotorized && everyWheel.isGrounded)
-            {
-                if (!isShiftingGear && !isBreaking)
-                {
-                    if (gearMode == GearMode.Drive)
-                    {
-                        var force = everyWheel.transform.forward * CalculateForce(engineRpm, everyWheel.wheelRadius, currentGear) / 3600f;
-                        _rb.AddForceAtPosition(force, everyWheel.hitPoint, ForceMode.Force);
-                    }
-                    
-                    if (gearMode == GearMode.Reverse)
-                    {
-                        var force = everyWheel.transform.forward * CalculateForce(engineRpm, everyWheel.wheelRadius, reverseGear) / 3600f;
-                        _rb.AddForceAtPosition(force, everyWheel.hitPoint, ForceMode.Force);
-                    }
-                }
-            }
-        }
-    }
-
-    private void VehicleSteering()
-    {
-        foreach (var everyWheel in wheels)
-        {
-            if (everyWheel.isSteerable)
-            {
-                everyWheel.steeringAngle = everyWheel.steerAngle * horizontalMovement;
+                _rb.AddForce(gameObject.transform.forward * (-localVelocity.z * normalAirResistance), ForceMode.Force);
             }
         }
     }
@@ -302,16 +310,14 @@ public class Vehicle : MonoBehaviour
     
     public float CalculateForce(float inputRpm, float wheelRadius, Gear gear)
     {
-        var wheelPerimeter = wheelRadius * 2f * Mathf.PI;
-
-        var calculatedForce = wheelPerimeter * inputRpm * 60f / gear.gearRatio / differentialGearRatio * verticalMovement;
+        var calculatedForce = wheelRadius * inputRpm * 60f / gear.gearRatio / differentialGearRatio * engineHorsePower / 100f * verticalMovement;
 
         return calculatedForce;
     }
     
     public float CalculateWheelRpm(float inputRpm, Gear gear)
     {
-        var calculatedWheelRpm = verticalMovement * inputRpm * 60f / gear.gearRatio / differentialGearRatio;
+        var calculatedWheelRpm = inputRpm * 60f / gear.gearRatio / differentialGearRatio * verticalMovement;
 
         return calculatedWheelRpm;
     }

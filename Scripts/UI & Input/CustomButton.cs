@@ -30,7 +30,7 @@ public class CustomButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
 
         if (!canHold)
         {
-            if (pressTime >= 0.025f)
+            if (pressTime >= Time.unscaledDeltaTime * 2f)
             {
                 isPressed = false;
                 pressTime = 0f;

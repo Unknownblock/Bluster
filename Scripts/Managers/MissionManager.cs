@@ -1,5 +1,3 @@
-
-using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,7 +18,7 @@ public class MissionManager : MonoBehaviour
     public float parkSpeed;
     public float remainingTime;
 
-    [Header("UI Variables")] public TextMeshProUGUI healthUI;
+    [Header("UI Variables")]
     public TextMeshProUGUI remainingTimeUI;
     
     public GameObject failUI;
@@ -89,7 +87,6 @@ public class MissionManager : MonoBehaviour
         var seconds = Mathf.RoundToInt(remainingTime % 60);
 
         remainingTimeUI.text = $"{minutes:00}:{seconds:00}";
-        healthUI.text = vehicleCollision.currentHealth.ToString();
         
         if (missionState == MissionState.Normal)
         {
